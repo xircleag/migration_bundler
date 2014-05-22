@@ -1,5 +1,7 @@
 # Monkey Butler
 
+![Monkey Butler](logo.jpg)
+
 Monkey Butler is a schema management system for SQLite written in Ruby. It is designed for use in projects that maintain
 an identical schema across multiple codebases. It was built to manage the synchronization schema for the iOS and Android 
 SDK's on the [Layer](http://layer.com) platform.
