@@ -105,13 +105,13 @@ This portion of the document details how Monkey Butler has been implemented to d
 A Monkey Butler project is a simple filesystem layout with version control provided by Git. When a new project is
 initialized, it has the following structure:
 
-.
-├── .gitignore
-├── .monkey_butler.yml
-├── [project-name].sql
-├── [project-name].sqlite
-└── migrations
-    └── <date-created>-create-[project-name].sql
+	.
+	├── .gitignore
+	├── .monkey_butler.yml
+	├── [project-name].sql
+	├── [project-name].sqlite
+	└── migrations
+	    └── <date-created>-create-[project-name].sql
 
 Subsequent commands will create files into this filesystem and perform manipulations on the database. The schema can be branched, merged, and 
 released using standard Git techniques.
