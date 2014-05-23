@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'monkey_butler'
+require 'monkey_butler/cli'
+
+MonkeyButler::CLI.start(ARGV)

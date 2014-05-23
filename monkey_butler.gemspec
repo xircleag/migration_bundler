@@ -13,18 +13,18 @@ Gem::Specification.new do |s|
   s.email       = 'blake@layer.com'
   s.homepage    = 'http://github.com/layerhq/monkey_butler'
   s.license     = 'Apache 2'
-  
+
   s.files         = `git ls-files`.split($/)
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
-  
+
   s.add_dependency 'thor', '~> 0.19.1'
-  s.add_dependency 'rugged', '~> 0.19.0'
-  
+
   s.add_development_dependency "bundler", "~> 1.6"
   s.add_development_dependency "rake"
   s.add_development_dependency "rspec", "~> 2.14.1"
+  s.add_development_dependency "guard-rspec", "~> 4.2.9"
   s.add_development_dependency "simplecov", "~> 0.8.2"
   s.add_development_dependency "debugger", "~> 1.6.6"
 end
