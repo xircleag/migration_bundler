@@ -51,11 +51,11 @@ and versioning semantics.
 
 `$ mb create [name]`
 
-### Displaying Info
+### Displaying Status
 
 Displays information about the current schema and any unapplied migrations.
 
-`$ mb info`
+`$ mb status`
 
 ### Applying Migrations
 
