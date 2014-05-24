@@ -1,19 +1,7 @@
 require 'spec_helper'
 require 'monkey_butler/commands/init'
-require 'tempfile'
 
 describe MonkeyButler::Commands::Init do
-  def capture_output(proc, &block)
-    error = nil
-    content = capture(:stdout) do
-      error = capture(:stderr) do
-        proc.call
-      end
-    end
-    yield content, error if block_given?
-    { stdout: content, stderr: error }
-  end
-
   context 'when no PATH is given' do
     it "prints an argument error to stderr" do
       content = capture(:stderr) { MonkeyButler::Commands::Init.start }
@@ -70,23 +58,43 @@ describe MonkeyButler::Commands::Init do
     end
 
     it "populates .gitignore" do
-      invoke!
+      invoke!([@path, '--project-name=MonkeyButler'])
       path = File.join(@path, '.gitignore')
       expect(File.exists?(@path)).to be_true
       content = File.read(path)
       content.should include('.DS_Store')
-      content.should =~ /.sqlite$/
+      content.should =~ /^MonkeyButler.db$/
     end
 
-    it "populates .monkey_butler.yml" do
-      invoke!
-      path = File.join(@path, '.monkey_butler.yml')
-      expect(File.exists?(@path)).to be_true
+    describe '.monkey_butler.yml' do
+      before(:each) do
+        invoke!([@path, '--project-name=MonkeyButler'])
+        @yaml_path = File.join(@path, '.monkey_butler.yml')
+      end
+
+      it "is created" do
+        expect(File.exists?(@yaml_path)).to be_true
+      end
+
+      it "is valid YAML" do
+        expect { YAML.load(File.read(@yaml_path)) }.not_to raise_error
+      end
+
+      it "configures the project name" do
+        config = YAML.load(File.read(@yaml_path))
+        config['project_name'].should == 'MonkeyButler'
+      end
     end
 
     it "creates an empty database" do
       invoke!([@path, '--project-name=MonkeyButler'])
-      path = File.join(@path, 'MonkeyButler.sqlite')
+      path = File.join(@path, 'MonkeyButler.db')
+      expect(File.exists?(@path)).to be_true
+    end
+
+    it "creates an empty schema" do
+      invoke!([@path, '--project-name=MonkeyButler'])
+      path = File.join(@path, 'MonkeyButler.sql')
       expect(File.exists?(@path)).to be_true
     end
 

@@ -1,4 +1,5 @@
 require 'monkey_butler/commands/base'
+require 'monkey_butler/util'
 
 module MonkeyButler
   module Commands
@@ -28,15 +29,14 @@ module MonkeyButler
       end
 
       def touch_database
-        database_file = "#{project_name}.sqlite"
-        create_file(database_file)
+        create_file("#{project_name}.sqlite")
+        create_file("#{project_name}.sql")
       end
 
       def generate_initial_migration
-        migration_timestamp = Time.now.strftime('%Y%m%d%M%S%3N')
-        migration_name = [migration_timestamp, 'create', Thor::Util.snake_case(project_name) + '.sql'].join('_')
+        migration_name = MonkeyButler::Util.migration_named(project_name)
         empty_directory('migrations')
-        template('templates/migration.sql.erb', "migrations/#{migration_name}")
+        template('templates/create_monkey_butler_tables.sql.erb', "migrations/#{migration_name}")
         git_add "migrations/#{migration_name}"
       end
 

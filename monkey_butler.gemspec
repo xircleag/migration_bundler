@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency 'thor', '~> 0.19.1'
+  s.add_dependency 'sqlite3', '~> 1.3.9'
 
   s.add_development_dependency "bundler", "~> 1.6"
   s.add_development_dependency "rake"
