@@ -25,6 +25,10 @@ module MonkeyButler
       yield self if block_given?
     end
 
+    def has_migrations_table?
+      has_table?('schema_migrations')
+    end
+
     def origin_version
       db.get_first_value('SELECT MIN(version) FROM schema_migrations')
     end
@@ -39,6 +43,11 @@ module MonkeyButler
 
     def insert_version(version)
       db.execute("INSERT INTO schema_migrations(version) VALUES (?)", version)
+    end
+
+    private
+    def has_table?(table)
+      db.get_first_value("SELECT name FROM sqlite_master WHERE type='table' AND name=?", table)
     end
   end
 end

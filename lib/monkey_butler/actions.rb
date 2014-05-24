@@ -19,6 +19,6 @@ module MonkeyButler
       inside(destination_root) do
         git add: paths.flatten.join(' ')
       end
-    end
+    end        
   end
 end

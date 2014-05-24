@@ -4,6 +4,7 @@ Bundler.setup
 require 'monkey_butler'
 
 require 'tempfile'
+require 'digest'
 require 'debugger'
 Debugger.start
 
@@ -48,5 +49,10 @@ RSpec.configure do |config|
     path = Dir.mktmpdir
     FileUtils.cp_r Dir.glob(destination_root + '/.'), path
     path
+  end
+
+  def random_migration_name
+    timestamp = MonkeyButler::Util.migration_timestamp + rand(1..1000)
+    MonkeyButler::Util.migration_named(Digest::SHA256.hexdigest(Time.now.to_s), timestamp)
   end
 end

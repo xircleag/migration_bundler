@@ -73,6 +73,13 @@ describe MonkeyButler::Database do
   end
 
   describe '#all_versions' do
+    context "when the database is empty" do
+      it "raises a SQL exception" do
+        db = MonkeyButler::Database.new(db_path)
+        expect { db.all_versions }.to raise_error(SQLite3::SQLException)
+      end
+    end
+
     context "when the schema_migrations table is empty" do
       it "returns an empty array" do
         db.all_versions.should == []
