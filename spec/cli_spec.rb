@@ -243,7 +243,7 @@ describe MonkeyButler::CLI do
     context "when there is a schema to and migrations to apply" do
       it "informs the user validation was successful" do
         output = invoke!(%w{validate})
-        output[:stdout].should =~ /Validation successful: schema loads and all migrations apply./
+        output[:stdout].should =~ /Validation successful./
       end
     end
   end

@@ -203,7 +203,7 @@ module MonkeyButler
       truncate_path(config.db_path)
       migrate
 
-      say "Validation successful: schema loads and all migrations apply."
+      say "Validation successful."
     end
 
     desc "package VERSION", "Packages a release by validating, generating, and tagging a version"
