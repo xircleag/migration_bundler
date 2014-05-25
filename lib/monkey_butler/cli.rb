@@ -24,6 +24,61 @@ class MonkeyButler::Config
   def schema_path
     "#{project_name}.sql"
   end
+
+  def migrations_path
+    "migrations"
+  end
+end
+
+class MonkeyButler::Migrations
+  attr_reader :path, :database
+
+  def initialize(path, database)
+    @path = path
+    @database = database
+    migration_paths = Dir.glob(File.join(path, '*.sql'))
+    @paths_by_version = MonkeyButler::Util.migrations_by_version(migration_paths)
+  end
+
+  def current_version
+    database.has_migrations_table? ? database.current_version : nil
+  end
+
+  def all_versions
+    @paths_by_version.keys
+  end
+
+  def latest_version
+    all_versions.max
+  end
+
+  def applied_versions
+    database.has_migrations_table? ? database.all_versions : []
+  end
+
+  def pending_versions
+    (all_versions - applied_versions).sort
+  end
+
+  def pending(&block)
+    pending_versions.inject({}) { |hash, v| hash[v] = self[v]; hash }.tap do |hash|
+      hash.each(&block) if block_given?
+    end
+  end
+
+  def all(&block)
+    all_versions.inject({}) { |hash, v| hash[v] = self[v]; hash }.tap do |hash|
+      hash.each(&block) if block_given?
+    end
+  end
+
+  def up_to_date?
+    pending_versions.empty?
+  end
+
+  def [](version)
+    @paths_by_version[version]
+  end
 end
 
 module MonkeyButler
@@ -42,10 +97,8 @@ module MonkeyButler
         raise Error, "Cannot load database: empty schema found at #{config.schema_path}. Maybe you need to `mb migrate`?"
       end
 
-      if File.size?(config.schema_path)
+      if File.size?(config.db_path)
         File.truncate(config.db_path, 0)
-
-        # NOTE: We load via sqlite3 CLI because its parsing is unforgiving of missing semicolons
         say_status :truncate, config.db_path, :yellow
       end
       command = "sqlite3 #{config.db_path} < #{config.schema_path}"
@@ -69,19 +122,16 @@ module MonkeyButler
     def status
       config = MonkeyButler::Config.load
       db = MonkeyButler::Database.new(config.db_path)
-      migration_paths = Dir.glob('migrations/*.sql')
-      migrations_by_version = MonkeyButler::Util.migrations_by_version(migration_paths)
-      applied_versions = db.has_migrations_table? ? db.all_versions : []
-      pending_migrations = (migrations_by_version.keys - applied_versions).sort
+      migrations = MonkeyButler::Migrations.new(config.migrations_path, db)
 
       if db.has_migrations_table?
-        say "Current version: #{db.current_version}"
+        say "Current version: #{migrations.current_version}"
       else
         say "New database"
         say "The database at '#{config.db_path}' does not have a 'schema_migrations' table."
       end
 
-      if pending_migrations.empty?
+      if migrations.up_to_date?
         say "Database is up to date."
         return
       end
@@ -91,8 +141,7 @@ module MonkeyButler
       with_padding do
         say %q{(use "mb migrate" to apply)}
         with_padding do
-          pending_migrations.each do |version|
-            path = migrations_by_version[version]
+          migrations.pending do |version, path|
             say "pending migration: #{path}", :green
           end
         end
@@ -104,17 +153,14 @@ module MonkeyButler
     def migrate(version = nil)
       config = MonkeyButler::Config.load
       db = MonkeyButler::Database.new(config.db_path)
-      migration_paths = Dir.glob('migrations/*.sql')
-      migrations_by_version = MonkeyButler::Util.migrations_by_version(migration_paths)
-      applied_versions = db.has_migrations_table? ? db.all_versions : []
-      pending_migrations = (migrations_by_version.keys - applied_versions).sort
+      migrations = MonkeyButler::Migrations.new(config.migrations_path, db)
 
-      if pending_migrations.empty?
+      if migrations.up_to_date?
         say "Database is up to date."
         return
       end
 
-      target_version = version || pending_migrations.max
+      target_version = version || migrations.latest_version
       if db.has_migrations_table?
         say "Migrating from #{db.current_version} to #{target_version}"
       else
@@ -125,10 +171,9 @@ module MonkeyButler
       with_padding do
         say "Migrating database..."
         with_padding do
-          pending_migrations.each do |version|
-            migration_path = migrations_by_version[version]
-            say "applying migration: #{migration_path}", :blue
-            command = "sqlite3 #{config.db_path} < #{migration_path}"
+          migrations.pending do |version, path|
+            say "applying migration: #{path}", :blue
+            command = "sqlite3 #{config.db_path} < #{path}"
             stdout_str, stderr_str, status = Open3.capture3(command)
             fail Error, "Failed loading migration: #{stderr_str}" unless stderr_str.empty?
             db.insert_version(version)
