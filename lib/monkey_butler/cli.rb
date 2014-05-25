@@ -173,12 +173,15 @@ module MonkeyButler
         with_padding do
           migrations.pending do |version, path|
             say "applying migration: #{path}", :blue
-            command = "sqlite3 #{config.db_path} < #{path}"
-            stdout_str, stderr_str, status = Open3.capture3(command)
-            fail Error, "Failed loading migration: #{stderr_str}" unless stderr_str.empty?
+            begin
+              db.execute_migration(File.read(path))
+            rescue SQLite3::Exception => exception
+              fail Error, "Failed loading migration: #{exception}"
+            end
             db.insert_version(version)
           end
         end
+        say
       end
     end
 
