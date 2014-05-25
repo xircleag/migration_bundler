@@ -86,6 +86,10 @@ module MonkeyButler
     include Thor::Actions
     include MonkeyButler::Actions
 
+    def self.source_root
+      File.dirname(__FILE__)
+    end
+
     # TODO: class options: verbose, dry run, specify database to work on.
 
     register(MonkeyButler::Commands::Init, "init", "init PATH", "Initializes a Monkey Butler repository at PATH")
