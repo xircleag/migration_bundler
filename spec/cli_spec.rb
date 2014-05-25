@@ -3,6 +3,7 @@ require 'spec_helper'
 describe MonkeyButler::CLI do
   let!(:project_root) { clone_temp_sandbox }
   let(:config) { MonkeyButler::Config.load(project_root) }
+  let(:schema_path) { File.join(project_root, config.schema_path) }
 
   def invoke!(args, options = {:capture => true})
     output = nil
@@ -28,8 +29,6 @@ describe MonkeyButler::CLI do
   end
 
   describe '#load' do
-    let(:schema_path) { File.join(project_root, config.schema_path) }
-
     context "when the schema is empty" do
       before(:each) do
         File.truncate(schema_path, 0)
@@ -220,12 +219,31 @@ describe MonkeyButler::CLI do
       end
 
       it "displays the migrations to be applied" do
-        output = invoke!(%w{status}, capture: true)
+        output = invoke!(%w{status})
         output[:stdout].should =~ /Migrations to be applied/
         output[:stdout].should =~ /\(use "mb migrate" to apply\)/
         @migration_paths[1,3].each do |path|
           output[:stdout].should =~ %r{pending migration:\s+migrations\/#{path}}
         end
+      end
+    end
+  end
+
+  describe '#validate' do
+    before(:each) do
+      sql = MonkeyButler::Util.strip_leading_whitespace <<-SQL
+        #{MonkeyButler::Database.create_schema_migrations_sql}
+        INSERT INTO schema_migrations(version) VALUES ('#{MonkeyButler::Util.migration_timestamp}');
+      SQL
+      File.open(schema_path, 'w+') { |f| f << sql }
+      add_migration('CREATE TABLE table1 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
+      add_migration('CREATE TABLE table2 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
+    end
+
+    context "when there is a schema to and migrations to apply" do
+      it "informs the user validation was successful" do
+        output = invoke!(%w{validate})
+        output[:stdout].should =~ /Validation successful: schema loads and all migrations apply./
       end
     end
   end

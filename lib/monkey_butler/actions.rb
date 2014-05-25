@@ -19,6 +19,11 @@ module MonkeyButler
       inside(destination_root) do
         git add: paths.flatten.join(' ')
       end
-    end        
+    end
+
+    def truncate_path(path)
+      say_status :truncate, path, :yellow
+      File.truncate(path, 0)
+    end
   end
 end

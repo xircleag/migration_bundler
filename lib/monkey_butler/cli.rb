@@ -192,8 +192,18 @@ module MonkeyButler
 
     desc "validate", "Validates that schema loads and all migrations are linearly applicable"
     def validate
-      # Truncate the database (another action?)
-      # Apply all migrations in order
+      config = MonkeyButler::Config.load
+
+      say "Validating schema loads..."
+      truncate_path(config.db_path)
+      load
+      say
+
+      say "Validating migrations apply..."
+      truncate_path(config.db_path)
+      migrate
+
+      say "Validation successful: schema loads and all migrations apply."
     end
 
     desc "package VERSION", "Packages a release by validating, generating, and tagging a version"
