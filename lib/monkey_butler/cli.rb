@@ -1,85 +1,9 @@
 require 'thor'
 require "open3"
 require 'monkey_butler/commands/init'
-require 'monkey_butler/commands/generate'
-
-class MonkeyButler::Config
-  def self.load(path = Dir.pwd)
-    config_path = File.join(path, '.monkey_butler.yml')
-    raise "fatal: Not a monkey_butler repository: no .monkey_butler.yml" unless File.exists?(config_path)
-    options = YAML.load(File.read(config_path))
-    new(options)
-  end
-
-  attr_accessor :project_name
-
-  def initialize(options = {})
-    options.each { |k,v| send("#{k}=", v) }
-  end
-
-  def db_path
-    "#{project_name}.db"
-  end
-
-  def schema_path
-    "#{project_name}.sql"
-  end
-
-  def migrations_path
-    "migrations"
-  end
-end
-
-class MonkeyButler::Migrations
-  attr_reader :path, :database
-
-  def initialize(path, database)
-    @path = path
-    @database = database
-    migration_paths = Dir.glob(File.join(path, '*.sql'))
-    @paths_by_version = MonkeyButler::Util.migrations_by_version(migration_paths)
-  end
-
-  def current_version
-    database.has_migrations_table? ? database.current_version : nil
-  end
-
-  def all_versions
-    @paths_by_version.keys
-  end
-
-  def latest_version
-    all_versions.max
-  end
-
-  def applied_versions
-    database.has_migrations_table? ? database.all_versions : []
-  end
-
-  def pending_versions
-    (all_versions - applied_versions).sort
-  end
-
-  def pending(&block)
-    pending_versions.inject({}) { |hash, v| hash[v] = self[v]; hash }.tap do |hash|
-      hash.each(&block) if block_given?
-    end
-  end
-
-  def all(&block)
-    all_versions.inject({}) { |hash, v| hash[v] = self[v]; hash }.tap do |hash|
-      hash.each(&block) if block_given?
-    end
-  end
-
-  def up_to_date?
-    pending_versions.empty?
-  end
-
-  def [](version)
-    @paths_by_version[version]
-  end
-end
+require 'monkey_butler/config'
+require 'monkey_butler/database'
+require 'monkey_butler/migrations'
 
 module MonkeyButler
   class CLI < Thor
@@ -189,11 +113,6 @@ module MonkeyButler
       end
     end
 
-    desc "generate", "Generates platform specific migration implementations"
-    def generate
-      # TODO: Figure this out
-    end
-
     desc "validate", "Validates that schema loads and all migrations are linearly applicable"
     def validate
       config = MonkeyButler::Config.load
@@ -208,6 +127,11 @@ module MonkeyButler
       migrate
 
       say "Validation successful."
+    end
+
+    desc "generate", "Generates platform specific migration implementations"
+    def generate
+      # TODO: Figure this out
     end
 
     desc "package VERSION", "Packages a release by validating, generating, and tagging a version"
