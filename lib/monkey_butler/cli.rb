@@ -1,9 +1,10 @@
 require 'thor'
 require "open3"
-require 'monkey_butler/commands/init'
 require 'monkey_butler/config'
 require 'monkey_butler/database'
 require 'monkey_butler/migrations'
+require 'monkey_butler/commands/init'
+require 'monkey_butler/commands/dump'
 
 module MonkeyButler
   class CLI < Thor
@@ -15,9 +16,8 @@ module MonkeyButler
       File.dirname(__FILE__)
     end
 
-    # TODO: class options: verbose, dry run, specify database to work on.
-
     register(MonkeyButler::Commands::Init, "init", "init PATH", "Initializes a Monkey Butler repository at PATH")
+    register(MonkeyButler::Commands::Dump, "dump", "dump", "Dump project schema from a database")
 
     desc "load", "Load project schema into a database"
     def load
