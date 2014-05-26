@@ -18,7 +18,7 @@ module MonkeyButler
 
     register(MonkeyButler::Commands::Init, "init", "init PATH", "Initializes a Monkey Butler repository at PATH")
 
-    desc "load", "Loads project schema into target database"
+    desc "load", "Load project schema into a database"
     def load
       config = MonkeyButler::Config.load
       unless File.size?(config.schema_path)
@@ -38,7 +38,7 @@ module MonkeyButler
       say "Loaded schema at version #{db.current_version}"
     end
 
-    desc "create NAME", "Creates a new migration"
+    desc "create NAME", "Create a new migration"
     def create(name)
       migration_name = MonkeyButler::Util.migration_named(name)
       empty_directory('migrations')
@@ -46,7 +46,7 @@ module MonkeyButler
       git_add "migrations/#{migration_name}"
     end
 
-    desc "status", "Displays current schema version and any unapplied migrations"
+    desc "status", "Display current schema version and any pending migrations"
     def status
       config = MonkeyButler::Config.load
       db = MonkeyButler::Database.new(config.db_path)
@@ -77,7 +77,7 @@ module MonkeyButler
     end
 
     # TODO: The db path needs to be configurable...
-    desc "migrate [VERSION]", "Applies pending migrations to the target database"
+    desc "migrate [VERSION]", "Apply pending migrations to a database"
     def migrate(version = nil)
       config = MonkeyButler::Config.load
       db = MonkeyButler::Database.new(config.db_path)
@@ -113,7 +113,7 @@ module MonkeyButler
       end
     end
 
-    desc "validate", "Validates that schema loads and all migrations are linearly applicable"
+    desc "validate", "Validate that schema loads and all migrations are linearly applicable"
     def validate
       config = MonkeyButler::Config.load
 
@@ -129,12 +129,12 @@ module MonkeyButler
       say "Validation successful."
     end
 
-    desc "generate", "Generates platform specific migration implementations"
+    desc "generate", "Generate platform specific migration implementations"
     def generate
       # TODO: Figure this out
     end
 
-    desc "package VERSION", "Packages a release by validating, generating, and tagging a version"
+    desc "package VERSION", "Package a release by validating, generating, and tagging a version"
     def package
       # Run validation
       # Generate the Git, CocoaPods, etc.
@@ -142,7 +142,7 @@ module MonkeyButler
       # Tag the version
     end
 
-    desc "push VERSION", "Pushes a release to Git, CocoaPods, Maven, etc."
+    desc "push VERSION", "Push a release to Git, CocoaPods, Maven, etc."
     def push
       # Verify that the tag exists
       # Push to Github, CocoaPods, Maven (ask?)
