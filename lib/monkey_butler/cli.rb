@@ -81,9 +81,11 @@ module MonkeyButler
 
     # TODO: The db path needs to be configurable...
     desc "migrate [VERSION]", "Apply pending migrations to a database"
+    method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     def migrate(version = nil)
       config = MonkeyButler::Config.load
-      db = MonkeyButler::Database.new(config.db_path)
+      db_path = options[:database] || config.db_path
+      db = MonkeyButler::Database.new(db_path)
       migrations = MonkeyButler::Migrations.new(config.migrations_path, db)
 
       if migrations.up_to_date?

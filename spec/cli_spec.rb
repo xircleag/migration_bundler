@@ -93,6 +93,19 @@ describe MonkeyButler::CLI do
     end
 
     context "when the database is empty" do
+      context "when a database argument is given" do
+        it "applies all migrations to the specified database" do
+          db_path = Tempfile.new('specific.db').path
+          output = invoke!(%W{migrate -d #{db_path}})
+
+          db = MonkeyButler::Database.new(db_path)
+          expected_versions = MonkeyButler::Util.migrations_by_version(@migration_paths).keys.sort
+          target_version = expected_versions.max
+          expect(db.current_version).to eql(target_version)
+          expect(db.all_versions).to eql(expected_versions)
+        end
+      end
+
       it "applies all migrations" do
         output = invoke!(%w{migrate})
 
