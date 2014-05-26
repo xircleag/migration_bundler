@@ -79,7 +79,6 @@ module MonkeyButler
       end
     end
 
-    # TODO: The db path needs to be configurable...
     desc "migrate [VERSION]", "Apply pending migrations to a database"
     method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     def migrate(version = nil)
