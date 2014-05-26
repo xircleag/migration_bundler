@@ -5,17 +5,6 @@ describe MonkeyButler::CLI do
   let(:config) { MonkeyButler::Config.load(project_root) }
   let(:schema_path) { File.join(project_root, config.schema_path) }
 
-  def invoke!(args, options = {:capture => true})
-    output = nil
-    Dir.chdir(project_root) do
-      if options[:capture]
-        output = capture_output(proc { MonkeyButler::CLI.start(args) })
-      else
-        MonkeyButler::CLI.start(args)
-      end
-    end
-  end
-
   def add_migration(sql)
     path = File.join(project_root, 'migrations', random_migration_name)
     File.open(path, 'w+') do |f|

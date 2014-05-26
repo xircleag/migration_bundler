@@ -2,6 +2,8 @@ require 'spec_helper'
 require 'monkey_butler/commands/init'
 
 describe MonkeyButler::Commands::Init do
+  let(:thor_class) { MonkeyButler::Commands::Init }
+
   context 'when no PATH is given' do
     it "prints an argument error to stderr" do
       content = capture(:stderr) { MonkeyButler::Commands::Init.start }
@@ -40,27 +42,24 @@ describe MonkeyButler::Commands::Init do
   end
 
   context 'when the PATH given does not exist' do
-    before(:each) do
-      @path = Dir.mktmpdir
-      FileUtils.remove_entry @path
-    end
+    let!(:project_root) { Dir.mktmpdir }
 
-    def invoke!(args = [@path])
-      capture_output(proc { MonkeyButler::Commands::Init.start(args) })
+    before(:each) do
+      FileUtils.remove_entry project_root
     end
 
     it "creates the path" do
-      output = invoke!
+      output = invoke!([project_root])
       output[:stderr].should be_empty
       output[:stdout].should =~ /create\s+$/
-      File.exists?(@path).should be_true
-      File.directory?(@path).should be_true
+      File.exists?(project_root).should be_true
+      File.directory?(project_root).should be_true
     end
 
     it "populates .gitignore" do
-      invoke!([@path, '--project-name=MonkeyButler'])
-      path = File.join(@path, '.gitignore')
-      expect(File.exists?(@path)).to be_true
+      invoke!([project_root, '--project-name=MonkeyButler'])
+      path = File.join(project_root, '.gitignore')
+      expect(File.exists?(project_root)).to be_true
       content = File.read(path)
       content.should include('.DS_Store')
       content.should =~ /^MonkeyButler.db$/
@@ -68,8 +67,8 @@ describe MonkeyButler::Commands::Init do
 
     describe '.monkey_butler.yml' do
       before(:each) do
-        invoke!([@path, '--project-name=MonkeyButler'])
-        @yaml_path = File.join(@path, '.monkey_butler.yml')
+        invoke!([project_root, '--project-name=MonkeyButler'])
+        @yaml_path = File.join(project_root, '.monkey_butler.yml')
       end
 
       it "is created" do
@@ -87,22 +86,22 @@ describe MonkeyButler::Commands::Init do
     end
 
     it "creates an empty database" do
-      invoke!([@path, '--project-name=MonkeyButler'])
-      path = File.join(@path, 'MonkeyButler.db')
-      expect(File.exists?(@path)).to be_true
+      invoke!([project_root, '--project-name=MonkeyButler'])
+      path = File.join(project_root, 'MonkeyButler.db')
+      expect(File.exists?(project_root)).to be_true
     end
 
     it "creates an empty schema" do
-      invoke!([@path, '--project-name=MonkeyButler'])
-      path = File.join(@path, 'MonkeyButler.sql')
-      expect(File.exists?(@path)).to be_true
+      invoke!([project_root, '--project-name=MonkeyButler'])
+      path = File.join(project_root, 'MonkeyButler.sql')
+      expect(File.exists?(project_root)).to be_true
     end
 
     it "generates an initial migration" do
-      invoke!([@path, '--project-name=MonkeyButler'])
-      filename = Dir.entries(File.join(@path, 'migrations')).detect { |f| f =~ /create_monkey_butler.sql$/ }
+      invoke!([project_root, '--project-name=MonkeyButler'])
+      filename = Dir.entries(File.join(project_root, 'migrations')).detect { |f| f =~ /create_monkey_butler.sql$/ }
       expect(filename).not_to be_nil
-      path = File.join(@path, 'migrations', filename)
+      path = File.join(project_root, 'migrations', filename)
       expect(File.exists?(path)).to be_true
     end
 

@@ -3,15 +3,25 @@ Bundler.setup
 
 require 'monkey_butler'
 
+require 'rspec/core/shared_context'
 require 'tempfile'
 require 'digest'
 require 'debugger'
 Debugger.start
 
+module GlobalContext
+  extend RSpec::Core::SharedContext
+
+  # Assume that most specs will describe a Thor subclass
+  let(:thor_class) { subject.class }
+end
+
 RSpec.configure do |config|
   config.before do
     ARGV.replace []
   end
+
+  config.include GlobalContext
 
   def capture(stream)
     begin
@@ -54,5 +64,19 @@ RSpec.configure do |config|
   def random_migration_name
     timestamp = MonkeyButler::Util.migration_timestamp + rand(1..1000)
     MonkeyButler::Util.migration_named(Digest::SHA256.hexdigest(Time.now.to_s), timestamp)
+  end
+
+  # Requires `thor_class` and `project_root`
+  def invoke!(args = [], options = {:capture => true})
+    output = nil
+    # Some commands work with a directory that doesn't yet exist
+    dir = File.exists?(project_root) ? project_root : '.'
+    Dir.chdir(dir) do
+      if options[:capture]
+        output = capture_output(proc { thor_class.start(args) })
+      else
+        thor_class.start(args)
+      end
+    end
   end
 end
