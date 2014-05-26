@@ -10,6 +10,7 @@ module MonkeyButler
     include Thor::Actions
     include MonkeyButler::Actions
 
+    # Configures root path for resources (e.g. templates)
     def self.source_root
       File.dirname(__FILE__)
     end
@@ -52,7 +53,7 @@ module MonkeyButler
       db = MonkeyButler::Database.new(config.db_path)
       migrations = MonkeyButler::Migrations.new(config.migrations_path, db)
 
-      if db.has_migrations_table?
+      if db.migrations_table?
         say "Current version: #{migrations.current_version}"
       else
         say "New database"
@@ -89,7 +90,7 @@ module MonkeyButler
       end
 
       target_version = version || migrations.latest_version
-      if db.has_migrations_table?
+      if db.migrations_table?
         say "Migrating from #{db.current_version} to #{target_version}"
       else
         say "Migrating new database to #{target_version}"
@@ -103,10 +104,10 @@ module MonkeyButler
             say "applying migration: #{path}", :blue
             begin
               db.execute_migration(File.read(path))
+              db.insert_version(version)
             rescue SQLite3::Exception => exception
               fail Error, "Failed loading migration: #{exception}"
             end
-            db.insert_version(version)
           end
         end
         say

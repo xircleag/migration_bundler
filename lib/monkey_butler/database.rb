@@ -2,7 +2,7 @@ require 'sqlite3'
 
 module MonkeyButler
   class Database
-    attr_reader :db
+    attr_reader :db, :path
 
     class << self
       def create_schema_migrations_sql
@@ -21,11 +21,12 @@ module MonkeyButler
     end
 
     def initialize(path)
+      @path = path
       @db = SQLite3::Database.new(path)
       yield self if block_given?
     end
 
-    def has_migrations_table?
+    def migrations_table?
       has_table?('schema_migrations')
     end
 

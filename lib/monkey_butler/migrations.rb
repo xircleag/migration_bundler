@@ -10,7 +10,7 @@ module MonkeyButler
     end
 
     def current_version
-      database.has_migrations_table? ? database.current_version : nil
+      database.migrations_table? ? database.current_version : nil
     end
 
     def all_versions
@@ -22,7 +22,7 @@ module MonkeyButler
     end
 
     def applied_versions
-      database.has_migrations_table? ? database.all_versions : []
+      database.migrations_table? ? database.all_versions : []
     end
 
     def pending_versions
