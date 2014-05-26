@@ -20,22 +20,24 @@ module MonkeyButler
     register(MonkeyButler::Commands::Dump, "dump", "dump", "Dump project schema from a database")
 
     desc "load", "Load project schema into a database"
+    method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     def load
       config = MonkeyButler::Config.load
       unless File.size?(config.schema_path)
         raise Error, "Cannot load database: empty schema found at #{config.schema_path}. Maybe you need to `mb migrate`?"
       end
 
-      if File.size?(config.db_path)
-        File.truncate(config.db_path, 0)
-        say_status :truncate, config.db_path, :yellow
+      db_path = options[:database] || config.db_path
+      if File.size?(db_path)
+        File.truncate(db_path, 0)
+        say_status :truncate, db_path, :yellow
       end
-      command = "sqlite3 #{config.db_path} < #{config.schema_path}"
+      command = "sqlite3 #{db_path} < #{config.schema_path}"
       say_status :executing, command
       stdout_str, stderr_str, status = Open3.capture3(command)
       fail Error, "Failed loading schema: #{stderr_str}" unless stderr_str.empty?
 
-      db = MonkeyButler::Database.new(config.db_path)
+      db = MonkeyButler::Database.new(db_path)
       say "Loaded schema at version #{db.current_version}"
     end
 

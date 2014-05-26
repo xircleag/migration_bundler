@@ -68,6 +68,17 @@ describe MonkeyButler::CLI do
         output = invoke!(%w{load})
         output[:stdout].should =~ /Loaded schema at version #{@timestamp}/
       end
+
+      context "when a database argument is given" do
+        it "loads into the specified database" do
+          db_path = Tempfile.new('specific.db').path
+          output = invoke!(%W{load -d #{db_path}})
+          output[:stdout].should_not =~ /truncate sandbox.db/
+          output[:stdout].should =~ /executing  sqlite3 #{db_path} < sandbox.sql/
+          output[:stdout].should =~ /Loaded schema at version #{@timestamp}/
+          output[:stderr].should be_empty
+        end
+      end
     end
   end
 
