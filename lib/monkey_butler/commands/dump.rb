@@ -13,7 +13,7 @@ module MonkeyButler
         say "Dumping schema from database '#{database_path}'"
       end
 
-      def truncate_database
+      def truncate_schema
         File.truncate(config.schema_path, 0)
       end
 
