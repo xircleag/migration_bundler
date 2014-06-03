@@ -81,6 +81,7 @@ module MonkeyButler
 
     desc "migrate [VERSION]", "Apply pending migrations to a database"
     method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
+    method_option :dump, type: :boolean, aliases: '-D', desc: "Dump schema after migrate"
     def migrate(version = nil)
       config = MonkeyButler::Config.load
       db_path = options[:database] || config.db_path
@@ -115,6 +116,8 @@ module MonkeyButler
         end
         say
       end
+
+      invoke :dump if options[:dump]
     end
 
     desc "validate", "Validate that schema loads and all migrations are linearly applicable"

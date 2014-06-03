@@ -104,6 +104,16 @@ describe MonkeyButler::CLI do
           expect(db.current_version).to eql(target_version)
           expect(db.all_versions).to eql(expected_versions)
         end
+
+        context "when the dump option is given" do
+          it "dumps the database after migrations" do
+            db_path = Tempfile.new('specific.db').path
+            File.truncate(schema_path, 0)
+            output = invoke!(%W{migrate -d #{db_path} --dump})
+            output[:stdout].should =~ /Dumping schema from database/
+            File.size(schema_path).should_not == 0
+          end
+        end
       end
 
       it "applies all migrations" do
