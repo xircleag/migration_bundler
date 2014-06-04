@@ -6,6 +6,8 @@ module MonkeyButler
     class Init < Base
       argument :path, type: :string, desc: 'Location to initialize the repository into', required: true
       class_option :project_name, type: :string, desc: "Specify project name"
+      class_option :generators, type: :array, default: [], desc: "Specify default code generators."
+      class_option :config, type: :hash, default: {}, :required => true
       desc 'Initializes a new repository into PATH'
 
       def create_repository
@@ -24,7 +26,7 @@ module MonkeyButler
       end
 
       def generate_config
-        template('templates/monkey_butler.yml.erb', '.monkey_butler.yml')
+        create_file '.monkey_butler.yml', YAML.dump(options)
         git_add '.monkey_butler.yml'
       end
 

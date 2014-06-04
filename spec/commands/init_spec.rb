@@ -66,8 +66,9 @@ describe MonkeyButler::Commands::Init do
     end
 
     describe '.monkey_butler.yml' do
+      let(:args) { [project_root, '--project-name=MonkeyButler'] }
       before(:each) do
-        invoke!([project_root, '--project-name=MonkeyButler'])
+        invoke!(args)
         @yaml_path = File.join(project_root, '.monkey_butler.yml')
       end
 
@@ -82,6 +83,25 @@ describe MonkeyButler::Commands::Init do
       it "configures the project name" do
         config = YAML.load(File.read(@yaml_path))
         config['project_name'].should == 'MonkeyButler'
+      end
+
+      it "includes a nested config dictionary" do
+        config = YAML.load(File.read(@yaml_path))
+        config['config'].should == {}
+      end
+
+      it "configures default adapters" do
+        config = YAML.load(File.read(@yaml_path))
+        config['config'].should == {}
+      end
+
+      context "when config option is specified" do
+        let(:args) { [project_root, '--project-name=MonkeyButler', '--config', 'foo:bar'] }
+
+        it "parses the arguments as a hash of config vars" do
+          config = YAML.load(File.read(@yaml_path))
+          config['config'].should == {"foo" => "bar"}
+        end
       end
     end
 
@@ -105,11 +125,10 @@ describe MonkeyButler::Commands::Init do
       expect(File.exists?(path)).to be_true
     end
 
-    pending "initializes a Git repository at the destination path" do
-      # puts invoke!.inspect
-      # repo = Rugged::Repository.new(@path)
-      # expect(repo.empty?).to be_true
-      # repo.index.entries.should_not == %w{}
+    it "initializes a Git repository at the destination path" do
+      invoke!([project_root, '--project-name=MonkeyButler'])
+      path = File.join(project_root, '.git')
+      expect(File.exists?(path)).to be_true
     end
   end
 end

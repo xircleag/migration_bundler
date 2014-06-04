@@ -7,7 +7,7 @@ module MonkeyButler
       new(options)
     end
 
-    attr_accessor :project_name
+    attr_accessor :project_name, :config
 
     def initialize(options = {})
       options.each { |k,v| send("#{k}=", v) }
