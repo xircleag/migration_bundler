@@ -6,9 +6,20 @@ describe MonkeyButler::Generators::JavaGenerator do
   let!(:project_root) { clone_temp_sandbox }
 
   describe '#generate' do
+    it "should have a `generate` method" do
+      puts "Working in directory: #{project_root}"
+      invoke!(['generate'])
+    end
+
     it "should have a schema file in assets/schema" do
       invoke!(['generate'])
-      expect(File.file?(File.join(project_root, 'project/monkeybutler/src/main/assets/schema/schema_create2.sql'))).to eq(true)
+      expect(File.directory?(File.join(project_root, 'project/monkeybutler/src/main/assets/schema'))).to eq(true)
+      expect(File.file?(File.join(project_root, 'project/monkeybutler/src/main/assets/schema/schema_create.sql'))).to eq(true)
+    end
+
+    it "should have migration files in assets/migrations" do
+      invoke!(['generate'])
+      expect(File.directory?(File.join(project_root, 'project/monkeybutler/src/main/assets/migrations'))).to eq(true)
     end
   end
 
