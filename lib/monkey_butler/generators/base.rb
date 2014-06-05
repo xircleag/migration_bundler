@@ -3,6 +3,7 @@ module MonkeyButler
     class Base < Thor
       include Thor::Actions
       include MonkeyButler::Actions
+      add_runtime_options!
 
       class << self
         def source_root

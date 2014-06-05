@@ -64,13 +64,19 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
   describe "#push" do
     context "when cocoapods.repo is not configured" do
       it "fails with an error" do
-
+        yaml_path = File.join(project_root, '.monkey_butler.yml')
+        project = YAML.load(File.read(yaml_path))
+        project['config'].delete 'cocoapods.repo'
+        File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
+        output = invoke!(['push'])
+        output[:stderr].should =~ /Cannot push to CocoaPods: cocoapods.repo is not configured./
       end
     end
 
     context "when cocoapods.repo is configured" do
       it "invokes pod push" do
-
+        output = invoke!(['push', '--pretend'])
+        output[:stdout].should =~ /run  pod repo push example_specs_repo sandbox.podspec/
       end
     end
   end
