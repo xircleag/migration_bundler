@@ -60,7 +60,7 @@ describe MonkeyButler::CLI do
 
       it "loads without error" do
         output = invoke!(%w{load})
-        output[:stdout].should =~ /executing  sqlite3 sandbox.db < sandbox.sql/
+        output[:stdout].should =~ /executing  sqlite3 sandbox.sqlite < sandbox.sql/
         output[:stderr].should be_empty
       end
 
@@ -73,7 +73,7 @@ describe MonkeyButler::CLI do
         it "loads into the specified database" do
           db_path = Tempfile.new('specific.db').path
           output = invoke!(%W{load -d #{db_path}})
-          output[:stdout].should_not =~ /truncate sandbox.db/
+          output[:stdout].should_not =~ /truncate sandbox.sqlite/
           output[:stdout].should =~ /executing  sqlite3 #{db_path} < sandbox.sql/
           output[:stdout].should =~ /Loaded schema at version #{@timestamp}/
           output[:stderr].should be_empty
@@ -119,7 +119,7 @@ describe MonkeyButler::CLI do
       it "applies all migrations" do
         output = invoke!(%w{migrate})
 
-        db = MonkeyButler::Database.new(project_root + '/sandbox.db')
+        db = MonkeyButler::Database.new(project_root + '/sandbox.sqlite')
         expected_versions = MonkeyButler::Util.migrations_by_version(@migration_paths).keys.sort
         target_version = expected_versions.max
         expect(db.current_version).to eql(target_version)
@@ -148,7 +148,7 @@ describe MonkeyButler::CLI do
     context "when the database is up to date" do
       before(:each) do
         versions = MonkeyButler::Util.migration_versions_from_paths(@migration_paths)
-        database = MonkeyButler::Database.create(project_root + '/sandbox.db')
+        database = MonkeyButler::Database.create(project_root + '/sandbox.sqlite')
         versions.each { |version| database.insert_version(version) }
       end
 
@@ -161,7 +161,7 @@ describe MonkeyButler::CLI do
     context "when some migrations have been applied" do
       before(:each) do
         versions = MonkeyButler::Util.migration_versions_from_paths(@migration_paths)
-        database = MonkeyButler::Database.create(project_root + '/sandbox.db')
+        database = MonkeyButler::Database.create(project_root + '/sandbox.sqlite')
         @current_version = versions.first
         database.insert_version(@current_version)
       end
@@ -196,7 +196,7 @@ describe MonkeyButler::CLI do
     context "when the database is up to date" do
       before(:each) do
         versions = MonkeyButler::Util.migration_versions_from_paths(@migration_paths)
-        database = MonkeyButler::Database.create(project_root + '/sandbox.db')
+        database = MonkeyButler::Database.create(project_root + '/sandbox.sqlite')
         versions.each { |version| database.insert_version(version) }
       end
 
@@ -215,7 +215,7 @@ describe MonkeyButler::CLI do
       it "informs the user the database is missing the schema migrations table" do
         output = invoke!(%w{status})
         output[:stdout].should =~ /New database/
-        output[:stdout].should =~ /The database at 'sandbox.db' does not have a 'schema_migrations' table./
+        output[:stdout].should =~ /The database at 'sandbox.sqlite' does not have a 'schema_migrations' table./
       end
 
       it "displays the migrations to be applied" do
@@ -231,7 +231,7 @@ describe MonkeyButler::CLI do
     context "when there are unapplied migrations" do
       before(:each) do
         versions = MonkeyButler::Util.migration_versions_from_paths(@migration_paths)
-        database = MonkeyButler::Database.create(project_root + '/sandbox.db')
+        database = MonkeyButler::Database.create(project_root + '/sandbox.sqlite')
         @current_version = versions.first
         database.insert_version(@current_version)
       end

@@ -14,7 +14,7 @@ module MonkeyButler
     end
 
     def db_path
-      "#{name}.db"
+      "#{name}.sqlite"
     end
 
     def schema_path

@@ -1,5 +1,6 @@
 require 'monkey_butler/commands/base'
 require 'monkey_butler/util'
+require 'yaml'
 
 module MonkeyButler
   module Commands
@@ -39,8 +40,9 @@ module MonkeyButler
       end
 
       def touch_database
-        create_file("#{project_name}.sqlite")
-        create_file("#{project_name}.sql")
+        create_file(project.db_path)
+        create_file(project.schema_path)
+        git_add project.schema_path
       end
 
       def generate_initial_migration
@@ -55,9 +57,13 @@ module MonkeyButler
         options[:name] || File.basename(path)
       end
 
+      def project
+        @project ||= MonkeyButler::Project.new(sanitized_options)
+      end
+
       def sanitized_options
         ignored_keys = %w{bundler}
-        options.reject { |k,v| ignored_keys.include?(k) }
+        options.reject { |k,v| ignored_keys.include?(k) }.merge('name' => project_name)
       end
     end
   end

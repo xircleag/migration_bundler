@@ -17,7 +17,7 @@ module MonkeyButler
       File.dirname(__FILE__)
     end
 
-    register(MonkeyButler::Commands::Init, "init", "init PATH", "Initializes a Monkey Butler repository at PATH")
+    register(MonkeyButler::Commands::Init, "init", "init PATH", "Initializes a Monkey Butler project at PATH")
     register(MonkeyButler::Commands::Dump, "dump", "dump", "Dump project schema from a database")
 
     desc "load", "Load project schema into a database"

@@ -62,7 +62,7 @@ describe MonkeyButler::Commands::Init do
       expect(File.exists?(project_root)).to be_true
       content = File.read(path)
       content.should include('.DS_Store')
-      content.should =~ /^MonkeyButler.db$/
+      content.should =~ /^MonkeyButler.sqlite$/
     end
 
     describe '.monkey_butler.yml' do
@@ -106,13 +106,13 @@ describe MonkeyButler::Commands::Init do
     end
 
     it "creates an empty database" do
-      invoke!([project_root, '--project-name=MonkeyButler'])
+      invoke!([project_root, '--name=MonkeyButler'])
       path = File.join(project_root, 'MonkeyButler.db')
       expect(File.exists?(project_root)).to be_true
     end
 
     it "creates an empty schema" do
-      invoke!([project_root, '--project-name=MonkeyButler'])
+      invoke!([project_root, '--name=MonkeyButler'])
       path = File.join(project_root, 'MonkeyButler.sql')
       expect(File.exists?(project_root)).to be_true
     end
