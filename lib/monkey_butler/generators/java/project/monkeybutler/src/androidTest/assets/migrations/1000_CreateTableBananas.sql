@@ -1,0 +1,1 @@
+CREATE TABLE bananas (type TEXT);

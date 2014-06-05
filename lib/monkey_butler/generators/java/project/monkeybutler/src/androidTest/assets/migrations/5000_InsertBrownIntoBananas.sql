@@ -1,0 +1,1 @@
+INSERT INTO bananas (type, ripeness) VALUES ('brown', 'extreme');

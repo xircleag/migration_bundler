@@ -1,0 +1,1 @@
+ALTER TABLE bananas ADD ripeness TEXT;
