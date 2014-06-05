@@ -4,7 +4,9 @@ module MonkeyButler
   module Generators
     class JavaGenerator < MonkeyButler::Generators::Base
       def generate
-        # Do the generation in here
+      end
+
+      def push
       end
     end
   end
