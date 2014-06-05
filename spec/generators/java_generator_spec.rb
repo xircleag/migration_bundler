@@ -7,6 +7,7 @@ describe MonkeyButler::Generators::JavaGenerator do
 
   describe '#generate' do
     it "should have a `generate` method" do
+      # Mostly here for project_root
       puts "Working in directory: #{project_root}"
       invoke!(['generate'])
     end
@@ -20,6 +21,7 @@ describe MonkeyButler::Generators::JavaGenerator do
     it "should have migration files in assets/migrations" do
       invoke!(['generate'])
       expect(File.directory?(File.join(project_root, 'project/monkeybutler/src/main/assets/migrations'))).to eq(true)
+      expect(Dir.entries(File.join(project_root, 'project/monkeybutler/src/main/assets/migrations')).size).not_to eq(2)
     end
   end
 
