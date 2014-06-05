@@ -1,9 +1,9 @@
 module MonkeyButler
   class Project
     def self.load(path = Dir.pwd)
-      config_path = File.join(path, '.monkey_butler.yml')
-      raise "fatal: Not a monkey_butler repository: no .monkey_butler.yml" unless File.exists?(config_path)
-      options = YAML.load(File.read(config_path))
+      project_path = File.join(path, '.monkey_butler.yml')
+      raise "fatal: Not a monkey_butler repository: no .monkey_butler.yml" unless File.exists?(project_path)
+      options = YAML.load(File.read(project_path))
       new(options)
     end
 
@@ -27,6 +27,15 @@ module MonkeyButler
 
     def git_url
       @git_url ||= `git config remote.origin.url`.chomp
+    end
+
+    def save!(path)
+      project_path = File.join(path, '.monkey_butler.yml')
+      File.open(project_path, 'w') { |f| f << YAML.dump(self.to_hash) }
+    end
+
+    def to_hash
+      { "name" => name, "config" => config, "generators" => generators }
     end
   end
 end

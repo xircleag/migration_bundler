@@ -3,6 +3,12 @@ require 'monkey_butler/generators/base'
 module MonkeyButler
   module Generators
     class CocoapodsGenerator < MonkeyButler::Generators::Base
+      def init
+        unless project.config['cocoapods.repo']
+          project.config['cocoapods.repo'] = ask("What is the name of your Cocoapods specs repo? ")
+        end
+      end
+
       def generate
         template('podspec.erb', podspec_name)
       end

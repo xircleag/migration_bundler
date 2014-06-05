@@ -36,6 +36,16 @@ module MonkeyButler
         string.gsub!('/', '::')
         string
       end
+
+      def generator_classes_named(names)
+        names.map do |name|
+          require "monkey_butler/generators/#{name}/#{name}_generator"
+          klass_name = "MonkeyButler::Generators::#{Util.camelize(name)}Generator"
+          Object.const_get(klass_name).tap do |klass|
+            yield klass if block_given?
+          end
+        end
+      end
     end
   end
 end

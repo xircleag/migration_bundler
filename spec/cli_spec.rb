@@ -295,6 +295,7 @@ describe MonkeyButler::CLI do
         output = invoke!(%w{generate})
         output[:stdout].should =~ /Invoking generator 'cocoapods'/
         output[:stdout].should_not =~ /Invoking generator 'java'/
+        output[:stderr].should == ""
       end
     end
 

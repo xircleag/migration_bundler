@@ -22,6 +22,14 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
     end
   end
 
+  describe "#init" do
+    it "asks for the name of the cocoapods repository" do
+      remove_cocoapods_repo_from_config
+      expect(Thor::LineEditor).to receive(:readline).with("What is the name of your Cocoapods specs repo?  ", {}).and_return("layerhq")
+      invoke!(['init'])
+    end
+  end
+
   describe '#generate' do
     let!(:podspec) do
       invoke!(['generate'])
@@ -64,10 +72,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
   describe "#push" do
     context "when cocoapods.repo is not configured" do
       it "fails with an error" do
-        yaml_path = File.join(project_root, '.monkey_butler.yml')
-        project = YAML.load(File.read(yaml_path))
-        project['config'].delete 'cocoapods.repo'
-        File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
+        remove_cocoapods_repo_from_config
         output = invoke!(['push'])
         output[:stderr].should =~ /Cannot push to CocoaPods: cocoapods.repo is not configured./
       end
@@ -79,5 +84,12 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
         output[:stdout].should =~ /run  pod repo push example_specs_repo sandbox.podspec/
       end
     end
+  end
+
+  def remove_cocoapods_repo_from_config
+    yaml_path = File.join(project_root, '.monkey_butler.yml')
+    project = YAML.load(File.read(yaml_path))
+    project['config'].delete 'cocoapods.repo'
+    File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
   end
 end

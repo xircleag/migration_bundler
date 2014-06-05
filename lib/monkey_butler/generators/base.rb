@@ -15,6 +15,11 @@ module MonkeyButler
         end
       end
 
+      desc "init", "Initializes the generator."
+      def init
+        # Default implementation does nothing
+      end
+
       desc "generate", "Generates a platform specific package."
       def generate
         raise "Generators must provide an implementation of :generate"

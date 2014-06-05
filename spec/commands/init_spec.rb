@@ -144,5 +144,12 @@ describe MonkeyButler::Commands::Init do
         expect(project['bundler']).to be_nil
       end
     end
+
+    context "when --generators option is given" do
+      it "informs the user that the generators are being initialized" do
+        output = invoke!([project_root, '--generators', 'cocoapods', '-c', 'cocoapods.repo', 'whatever'])
+        output[:stdout].should =~ /Initializing generator 'cocoapods'.../
+      end
+    end
   end
 end

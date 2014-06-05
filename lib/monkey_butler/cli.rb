@@ -142,12 +142,9 @@ module MonkeyButler
     def generate
       project = MonkeyButler::Project.load
       generator_names = options[:generators] || project.generators
-      generator_names.each do |name|
-        require "monkey_butler/generators/#{name}/#{name}_generator"
-        klass_name = "MonkeyButler::Generators::#{Util.camelize(name)}Generator"
-        klass = Object.const_get(klass_name)
-        say "Invoking generator '#{name}'..."
-        invoke(klass)
+      MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
+        say "Invoking generator '#{generator_class.name}'..."
+        invoke(generator_class, "generate")
       end
     end
 
@@ -189,12 +186,9 @@ module MonkeyButler
 
       # Give the generators a chance to push
       generator_names = options[:generators] || project.generators
-      generator_names.each do |name|
-        require "monkey_butler/generators/#{name}/#{name}_generator"
-        klass_name = "MonkeyButler::Generators::#{Util.camelize(name)}Generator"
-        klass = Object.const_get(klass_name)
-        say "Invoking generator '#{name}'..."
-        invoke(klass)
+      MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
+        say "Invoking generator '#{generator_class.name}'..."
+        invoke(generator_class, "push")
       end
     end
   end
