@@ -5,9 +5,10 @@ module MonkeyButler
   module Commands
     class Init < Base
       argument :path, type: :string, desc: 'Location to initialize the repository into', required: true
-      class_option :project_name, type: :string, desc: "Specify project name"
-      class_option :generators, type: :array, default: [], desc: "Specify default code generators."
-      class_option :config, type: :hash, default: {}, :required => true
+      class_option :name, type: :string, aliases: '-n', desc: "Specify project name"
+      class_option :generators, type: :array, aliases: '-g', default: [], desc: "Specify default code generators."
+      class_option :config, type: :hash, aliases: '-c', default: {}, :required => true
+      class_option :bundler, type: :boolean, aliases: '-b', default: false, desc: "Use Bundler to import MonkeyButler into project."
       desc 'Initializes a new repository into PATH'
 
       def create_repository
@@ -26,8 +27,15 @@ module MonkeyButler
       end
 
       def generate_config
-        create_file '.monkey_butler.yml', YAML.dump(options)
+        create_file '.monkey_butler.yml', YAML.dump(sanitized_options)
         git_add '.monkey_butler.yml'
+      end
+
+      def generate_gemfile
+        if options[:bundler]
+          template('templates/Gemfile.erb', "Gemfile")
+          git_add "Gemfile"
+        end
       end
 
       def touch_database
@@ -44,7 +52,12 @@ module MonkeyButler
 
       protected
       def project_name
-        options[:project_name] || File.basename(path)
+        options[:name] || File.basename(path)
+      end
+
+      def sanitized_options
+        ignored_keys = %w{bundler}
+        options.reject { |k,v| ignored_keys.include?(k) }
       end
     end
   end

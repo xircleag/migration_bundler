@@ -57,7 +57,7 @@ describe MonkeyButler::Commands::Init do
     end
 
     it "populates .gitignore" do
-      invoke!([project_root, '--project-name=MonkeyButler'])
+      invoke!([project_root, '--name=MonkeyButler'])
       path = File.join(project_root, '.gitignore')
       expect(File.exists?(project_root)).to be_true
       content = File.read(path)
@@ -66,7 +66,7 @@ describe MonkeyButler::Commands::Init do
     end
 
     describe '.monkey_butler.yml' do
-      let(:args) { [project_root, '--project-name=MonkeyButler'] }
+      let(:args) { [project_root, '--name=MonkeyButler'] }
       before(:each) do
         invoke!(args)
         @yaml_path = File.join(project_root, '.monkey_butler.yml')
@@ -82,7 +82,7 @@ describe MonkeyButler::Commands::Init do
 
       it "configures the project name" do
         config = YAML.load(File.read(@yaml_path))
-        config['project_name'].should == 'MonkeyButler'
+        config['name'].should == 'MonkeyButler'
       end
 
       it "includes a nested config dictionary" do
@@ -96,7 +96,7 @@ describe MonkeyButler::Commands::Init do
       end
 
       context "when config option is specified" do
-        let(:args) { [project_root, '--project-name=MonkeyButler', '--config', 'foo:bar'] }
+        let(:args) { [project_root, '--name=MonkeyButler', '--config', 'foo:bar'] }
 
         it "parses the arguments as a hash of config vars" do
           config = YAML.load(File.read(@yaml_path))
@@ -118,7 +118,7 @@ describe MonkeyButler::Commands::Init do
     end
 
     it "generates an initial migration" do
-      invoke!([project_root, '--project-name=MonkeyButler'])
+      invoke!([project_root, '--name=MonkeyButler'])
       filename = Dir.entries(File.join(project_root, 'migrations')).detect { |f| f =~ /create_monkey_butler.sql$/ }
       expect(filename).not_to be_nil
       path = File.join(project_root, 'migrations', filename)
@@ -126,9 +126,23 @@ describe MonkeyButler::Commands::Init do
     end
 
     it "initializes a Git repository at the destination path" do
-      invoke!([project_root, '--project-name=MonkeyButler'])
+      invoke!([project_root, '--name=MonkeyButler'])
       path = File.join(project_root, '.git')
       expect(File.exists?(path)).to be_true
+    end
+
+    context "when --bundler option is given" do
+      it "creates a Gemfile" do
+        invoke!([project_root, '--bundler'])
+        path = File.join(project_root, 'Gemfile')
+        expect(File.exists?(path)).to be_true
+      end
+
+      it "omits the option from the YAML" do
+        invoke!([project_root, '--bundler'])
+        project = YAML.load File.read(File.join(project_root, '.monkey_butler.yml'))
+        expect(project['bundler']).to be_nil
+      end
     end
   end
 end
