@@ -12,6 +12,12 @@ describe MonkeyButler::Generators::JavaGenerator do
       invoke!(['generate'])
     end
 
+    it "should have a project/build.gradle file" do
+      invoke!(['generate'])
+      expect(File.directory?(File.join(project_root, 'project'))).to eq(true)
+      expect(File.file?(File.join(project_root, 'project/build.gradle'))).to eq(true)
+    end
+
     it "should have a schema file in assets/schema" do
       invoke!(['generate'])
       expect(File.directory?(File.join(project_root, 'project/monkeybutler/src/main/assets/schema'))).to eq(true)
