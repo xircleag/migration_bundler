@@ -1,5 +1,5 @@
 module MonkeyButler
-  class Config
+  class Project
     def self.load(path = Dir.pwd)
       config_path = File.join(path, '.monkey_butler.yml')
       raise "fatal: Not a monkey_butler repository: no .monkey_butler.yml" unless File.exists?(config_path)
@@ -7,22 +7,26 @@ module MonkeyButler
       new(options)
     end
 
-    attr_accessor :project_name, :config
+    attr_accessor :name, :config, :generators
 
     def initialize(options = {})
       options.each { |k,v| send("#{k}=", v) }
     end
 
     def db_path
-      "#{project_name}.db"
+      "#{name}.db"
     end
 
     def schema_path
-      "#{project_name}.sql"
+      "#{name}.sql"
     end
 
     def migrations_path
       "migrations"
+    end
+
+    def git_url
+      @git_url ||= `git config remote.origin.url`.chomp
     end
   end
 end

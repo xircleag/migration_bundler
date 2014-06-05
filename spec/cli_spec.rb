@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe MonkeyButler::CLI do
   let!(:project_root) { clone_temp_sandbox }
-  let(:config) { MonkeyButler::Config.load(project_root) }
-  let(:schema_path) { File.join(project_root, config.schema_path) }
+  let(:project) { MonkeyButler::Project.load(project_root) }
+  let(:schema_path) { File.join(project_root, project.schema_path) }
 
   def add_migration(sql)
     path = File.join(project_root, 'migrations', random_migration_name)
@@ -276,6 +276,34 @@ describe MonkeyButler::CLI do
       invoke!(%w{create add_column_to_table})
       migration = Dir.entries(File.join(project_root, 'migrations')).detect { |f| f =~ /add_column_to_table\.sql/ }
       migration.should_not be_nil
+    end
+  end
+
+  describe '#generate' do
+    before(:each) do
+      sql = MonkeyButler::Util.strip_leading_whitespace <<-SQL
+        #{MonkeyButler::Database.create_schema_migrations_sql}
+        INSERT INTO schema_migrations(version) VALUES ('#{MonkeyButler::Util.migration_timestamp}');
+      SQL
+      File.open(schema_path, 'w+') { |f| f << sql }
+      add_migration('CREATE TABLE table1 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
+      add_migration('CREATE TABLE table2 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
+    end
+
+    context "when no generator option is not given" do
+      it "invokes the default generators for the project" do
+        output = invoke!(%w{generate})
+        output[:stdout].should =~ /Invoking generator 'cocoapods'/
+        output[:stdout].should_not =~ /Invoking generator 'java'/
+      end
+    end
+
+    context "when generator option is given" do
+      it "invokes the specified generators" do
+        output = invoke!(%w{generate -g java})
+        output[:stdout].should =~ /Invoking generator 'java'/
+        output[:stdout].should_not =~ /Invoking generator 'cocoapods'/
+      end
     end
   end
 end

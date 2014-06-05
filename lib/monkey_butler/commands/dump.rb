@@ -1,5 +1,5 @@
 require 'monkey_butler/commands/base'
-require 'monkey_butler/config'
+require 'monkey_butler/project'
 require 'monkey_butler/database'
 require 'monkey_butler/util'
 
@@ -14,7 +14,7 @@ module MonkeyButler
       end
 
       def truncate_schema
-        File.truncate(config.schema_path, 0)
+        File.truncate(project.schema_path, 0)
       end
 
       def dump_tables
@@ -52,7 +52,7 @@ module MonkeyButler
       def dump_rows_from_schema_migrations
         say "Dumping rows from 'schema_migrations'..."
         with_padding do
-          File.open(config.schema_path, 'a') do |f|
+          File.open(project.schema_path, 'a') do |f|
             database.all_versions.each do |version|
               f.puts "INSERT INTO schema_migrations(version) VALUES (#{version});"
               say "wrote version: #{version}", :green
@@ -67,16 +67,16 @@ module MonkeyButler
       end
 
       private
-      def config
-        @config ||= MonkeyButler::Config.load
+      def project
+        @project ||= MonkeyButler::Project.load
       end
 
       def schema_path
-        config.schema_path
+        project.schema_path
       end
 
       def database_path
-        options[:database] || config.db_path
+        options[:database] || project.db_path
       end
 
       def database

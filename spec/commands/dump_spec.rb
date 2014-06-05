@@ -3,9 +3,9 @@ require 'monkey_butler/commands/dump'
 
 describe MonkeyButler::Commands::Dump do
   let!(:project_root) { clone_temp_sandbox }
-  let(:config) { MonkeyButler::Config.load(project_root) }
-  let(:schema_path) { File.join(project_root, config.schema_path) }
-  let(:db_path) { File.join(project_root, config.db_path) }
+  let(:project) { MonkeyButler::Project.load(project_root) }
+  let(:schema_path) { File.join(project_root, project.schema_path) }
+  let(:db_path) { File.join(project_root, project.db_path) }
 
   before(:each) do
     db = MonkeyButler::Database.new(db_path)

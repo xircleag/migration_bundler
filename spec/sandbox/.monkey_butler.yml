@@ -1,1 +1,4 @@
-project_name: sandbox
+name: sandbox
+generators:
+  - cocoapods
+config: {}

@@ -1,10 +1,11 @@
 require 'thor'
 require "open3"
-require 'monkey_butler/config'
+require 'monkey_butler/project'
 require 'monkey_butler/database'
 require 'monkey_butler/migrations'
 require 'monkey_butler/commands/init'
 require 'monkey_butler/commands/dump'
+require 'monkey_butler/generators/base'
 
 module MonkeyButler
   class CLI < Thor
@@ -22,17 +23,17 @@ module MonkeyButler
     desc "load", "Load project schema into a database"
     method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     def load
-      config = MonkeyButler::Config.load
-      unless File.size?(config.schema_path)
-        raise Error, "Cannot load database: empty schema found at #{config.schema_path}. Maybe you need to `mb migrate`?"
+      project = MonkeyButler::Project.load
+      unless File.size?(project.schema_path)
+        raise Error, "Cannot load database: empty schema found at #{project.schema_path}. Maybe you need to `mb migrate`?"
       end
 
-      db_path = options[:database] || config.db_path
+      db_path = options[:database] || project.db_path
       if File.size?(db_path)
         File.truncate(db_path, 0)
         say_status :truncate, db_path, :yellow
       end
-      command = "sqlite3 #{db_path} < #{config.schema_path}"
+      command = "sqlite3 #{db_path} < #{project.schema_path}"
       say_status :executing, command
       stdout_str, stderr_str, status = Open3.capture3(command)
       fail Error, "Failed loading schema: #{stderr_str}" unless stderr_str.empty?
@@ -51,15 +52,15 @@ module MonkeyButler
 
     desc "status", "Display current schema version and any pending migrations"
     def status
-      config = MonkeyButler::Config.load
-      db = MonkeyButler::Database.new(config.db_path)
-      migrations = MonkeyButler::Migrations.new(config.migrations_path, db)
+      project = MonkeyButler::Project.load
+      db = MonkeyButler::Database.new(project.db_path)
+      migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
 
       if db.migrations_table?
         say "Current version: #{migrations.current_version}"
       else
         say "New database"
-        say "The database at '#{config.db_path}' does not have a 'schema_migrations' table."
+        say "The database at '#{project.db_path}' does not have a 'schema_migrations' table."
       end
 
       if migrations.up_to_date?
@@ -83,10 +84,10 @@ module MonkeyButler
     method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     method_option :dump, type: :boolean, aliases: '-D', desc: "Dump schema after migrate"
     def migrate(version = nil)
-      config = MonkeyButler::Config.load
-      db_path = options[:database] || config.db_path
+      project = MonkeyButler::Project.load
+      db_path = options[:database] || project.db_path
       db = MonkeyButler::Database.new(db_path)
-      migrations = MonkeyButler::Migrations.new(config.migrations_path, db)
+      migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
 
       if migrations.up_to_date?
         say "Database is up to date."
@@ -122,23 +123,32 @@ module MonkeyButler
 
     desc "validate", "Validate that schema loads and all migrations are linearly applicable"
     def validate
-      config = MonkeyButler::Config.load
+      project = MonkeyButler::Project.load
 
       say "Validating schema loads..."
-      truncate_path(config.db_path)
+      truncate_path(project.db_path)
       load
       say
 
       say "Validating migrations apply..."
-      truncate_path(config.db_path)
+      truncate_path(project.db_path)
       migrate
 
       say "Validation successful."
     end
 
     desc "generate", "Generate platform specific migration implementations"
+    method_option :generators, type: :array, aliases: '-g', desc: "Run a specific set of generators."
     def generate
-      # TODO: Figure this out
+      project = MonkeyButler::Project.load
+      generator_names = options[:generators] || project.generators
+      generator_names.each do |name|
+        require "monkey_butler/generators/#{name}/#{name}_generator"
+        klass_name = "MonkeyButler::Generators::#{Util.camelize(name)}Generator"
+        klass = Object.const_get(klass_name)
+        say "Invoking generator '#{name}'..."
+        invoke(klass)
+      end
     end
 
     desc "package VERSION", "Package a release by validating, generating, and tagging a version"
