@@ -1,6 +1,6 @@
 module MonkeyButler
   module Generators
-    class Base < Thor::Group
+    class Base < Thor
       include Thor::Actions
       include MonkeyButler::Actions
 
@@ -12,6 +12,16 @@ module MonkeyButler
         def name
           "#{self}".split('::').last.gsub(/Generator$/, '').downcase
         end
+      end
+
+      desc "generate", "Generates a platform specific package."
+      def generate
+        raise "Generators must provide an implementation of :generate"
+      end
+
+      desc "push", "Pushes a built package."
+      def push
+        # Default implementation does nothing
       end
 
       protected

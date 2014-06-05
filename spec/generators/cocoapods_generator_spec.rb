@@ -22,13 +22,9 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
     end
   end
 
-  it "generates a Podspec" do
-    output = invoke!([])
-  end
-
-  describe 'generated Podspec' do
+  describe '#generate' do
     let!(:podspec) do
-      invoke!([])
+      invoke!(['generate'])
       eval(File.read(File.join(project_root, 'sandbox.podspec')))
     end
 
@@ -62,6 +58,20 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
 
     it "has resource_bundles" do
       expect(podspec.resource_bundles).to eq({"MonkeyButler"=>["migrations/*", "sandbox.sql"]})
+    end
+  end
+
+  describe "#push" do
+    context "when cocoapods.repo is not configured" do
+      it "fails with an error" do
+
+      end
+    end
+
+    context "when cocoapods.repo is configured" do
+      it "invokes pod push" do
+
+      end
     end
   end
 end

@@ -151,18 +151,51 @@ module MonkeyButler
       end
     end
 
-    desc "package VERSION", "Package a release by validating, generating, and tagging a version"
+    desc "package", "Package a release by validating, generating, and tagging a version."
+    method_option :commit, type: :boolean, aliases: '-c', desc: "Commit package artifacts after build."
     def package
-      # Run validation
-      # Generate the Git, CocoaPods, etc.
-      # Commit the revision (ask?)
-      # Tag the version
+      project = MonkeyButler::Project.load
+      db = MonkeyButler::Database.new(db_path)
+      migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
+
+      validate
+      generate
+
+      git_add '.'
+      git :status
+
+      if options['commit'] || ask("Commit package artifacts? (y/n)", limited_to: %w{y n}) == 'y'
+        git "commit -m 'Packaging release #{migrations.latest_version}' ."
+        git "tag #{migrations.latest_version}"
+      else
+        say "Package artifacts were built but not committed. Re-run `mb package` when ready to complete build."
+      end
     end
 
-    desc "push VERSION", "Push a release to Git, CocoaPods, Maven, etc."
+    desc "push", "Push a release to Git, CocoaPods, Maven, etc."
+    method_option :force, type: :boolean, aliases: '-f', desc: "Force the Git push."
     def push
+      project = MonkeyButler::Project.load
+      db = MonkeyButler::Database.new(db_path)
+      migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
+
       # Verify that the tag exists
-      # Push to Github, CocoaPods, Maven (ask?)
+      tag = git "tag -l #{migrations.latest_version}"
+      if tag.blank?
+        fail Error, "Could not find tag #{migrations.latest_version}. Did you forget to run `mb package`?"
+      end
+      push_options = options['force'] ? "--force" : ""
+      git "push #{push_options}"
+
+      # Give the generators a chance to push
+      generator_names = options[:generators] || project.generators
+      generator_names.each do |name|
+        require "monkey_butler/generators/#{name}/#{name}_generator"
+        klass_name = "MonkeyButler::Generators::#{Util.camelize(name)}Generator"
+        klass = Object.const_get(klass_name)
+        say "Invoking generator '#{name}'..."
+        invoke(klass)
+      end
     end
   end
 end
