@@ -64,7 +64,9 @@ module MonkeyButler
 
       if db.migrations_table?
         say "Current version: #{migrations.current_version}"
-        say "The database at '#{project.db_path}' is #{migrations.pending.size} versions behind #{migrations.latest_version}" if migrations.pending.any?
+        pending_count = migrations.pending.size
+        version = (pending_count == 1) ? "version" : "versions"
+        say "The database at '#{project.db_path}' is #{pending_count} #{version} behind #{migrations.latest_version}" unless migrations.up_to_date?
       else
         say "New database"
         say "The database at '#{project.db_path}' does not have a 'schema_migrations' table."
