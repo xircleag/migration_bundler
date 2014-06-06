@@ -65,7 +65,7 @@ module MonkeyButler
 
       protected
       def bundle
-        run "bundle"
+        inside(destination_root) { run "bundle" }
       end
 
       def project_name
