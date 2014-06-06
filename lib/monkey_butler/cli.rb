@@ -130,6 +130,8 @@ module MonkeyButler
         say
       end
 
+      say "Migration to version #{target_version} complete."
+
       invoke :dump if options[:dump]
     end
 

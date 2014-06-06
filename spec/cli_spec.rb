@@ -134,11 +134,18 @@ describe MonkeyButler::CLI do
       end
 
       it "informs the user of all migrations applied" do
-        output = invoke!(%w{migrate}, capture: true)
+        output = invoke!(%w{migrate})
         output[:stdout].should =~ /Migrating database.../
         @migration_paths.each do |path|
           output[:stdout].should =~ %r{applying migration:\s+migrations\/#{path}}
         end
+      end
+
+      it "displays migraiton complete message" do
+        output = invoke!(%w{migrate})
+        expected_versions = MonkeyButler::Util.migrations_by_version(@migration_paths).keys.sort
+        target_version = expected_versions.max
+        output[:stdout].should =~ /Migration to version #{target_version} complete./
       end
 
       pending "dumps the schema and schema_migrations rows"
