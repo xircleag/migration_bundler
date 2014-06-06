@@ -243,6 +243,7 @@ describe MonkeyButler::CLI do
 
       it "displays the migrations to be applied" do
         output = invoke!(%w{status})
+        output[:stdout].should =~ /The database at 'sandbox.sqlite' is 3 versions behind /
         output[:stdout].should =~ /Migrations to be applied/
         output[:stdout].should =~ /\(use "mb migrate" to apply\)/
         @migration_paths[1,3].each do |path|
