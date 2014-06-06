@@ -8,7 +8,7 @@ module MonkeyButler
           project.config['cocoapods.repo'] = ask("What is the name of your Cocoapods specs repo? ")
         end
         if options['bundler']
-          append_to_file 'Gemfile', "gem 'cocoapods'"
+          append_to_file 'Gemfile', "gem 'cocoapods'\n"
         end
       end
 

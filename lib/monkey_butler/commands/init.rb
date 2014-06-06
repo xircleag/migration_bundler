@@ -35,9 +35,6 @@ module MonkeyButler
       def generate_gemfile
         if options['bundler']
           template('templates/Gemfile.erb', "Gemfile")
-          git_add "Gemfile"
-          bundle
-          git_add "Gemfile.lock"
         end
       end
 
@@ -48,6 +45,15 @@ module MonkeyButler
         end
         project.save!(destination_root) unless options['pretend']
         git_add '.monkey_butler.yml'
+      end
+
+      # Run after generators in case they modify the Gemfile
+      def run_bundler
+        if options['bundler']
+          git_add "Gemfile"
+          bundle
+          git_add "Gemfile.lock"
+        end
       end
 
       def touch_database
