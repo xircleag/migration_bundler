@@ -12,3 +12,7 @@ dependencies {
     testCompile 'junit:junit:4.11'
     testCompile 'org.easytesting:fest-assert:1.4'
 }
+
+task Jar(type: Jar) {
+    jar.archiveName = "monkeybutler-" + version + ".jar"
+}

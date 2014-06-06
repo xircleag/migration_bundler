@@ -16,19 +16,18 @@ describe MonkeyButler::Generators::JavaGenerator do
       expect(File.file?(File.join(project_root, 'project/build.gradle'))).to eq(true)
     end
 
-    it "should have a schema file in resources/schema" do
-      expect(File.directory?(File.join(project_root, 'project/monkeybutler/src/main/resources/schema'))).to eq(true)
-      expect(File.file?(File.join(project_root, 'project/monkeybutler/src/main/resources/schema/schema_create.sql'))).to eq(true)
+    it "should have a schema file in resources/resources/schema" do
+      expect(File.directory?(File.join(project_root, 'project/src/main/resources/resources/schema'))).to eq(true)
+      expect(File.file?(File.join(project_root, 'project/src/main/resources/resources/schema/mb_schema.sql'))).to eq(true)
     end
 
-    it "should have migration files in resources/migrations" do
-      expect(File.directory?(File.join(project_root, 'project/monkeybutler/src/main/resources/migrations'))).to eq(true)
-      expect(Dir.entries(File.join(project_root, 'project/monkeybutler/src/main/resources/migrations')).size).not_to eq(2)
+    it "should have migration files in resources/resources/migrations" do
+      expect(File.directory?(File.join(project_root, 'project/src/main/resources/resources/migrations'))).to eq(true)
+      expect(Dir.entries(File.join(project_root, 'project/src/main/resources/resources/migrations')).size).not_to eq(2)
     end
 
     it "should have project/monkeybutler/build/libs/monkeybutler.jar, monkeybutler-javadoc.jar files" do
-      expect(File.file?(File.join(project_root, 'project/monkeybutler/build/libs/monkeybutler.jar'))).to eq(true)
-      expect(File.file?(File.join(project_root, 'project/monkeybutler/build/libs/monkeybutler-javadoc.jar'))).to eq(true)
+      expect(File.file?(File.join(project_root, 'project/build/libs/monkeybutler-0.0.1.jar'))).to eq(true)
     end
   end
 
