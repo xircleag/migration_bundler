@@ -143,9 +143,11 @@ module MonkeyButler
       project = MonkeyButler::Project.load
 
       say "Validating project configuration..."
+      say_status :git, "configuration", (project.git_url.empty? ? :red : :green)
       if project.git_url.empty?
         fail Error, "Invalid configuration: git does not have a remote named 'origin'."
       end
+      say
 
       say "Validating schema loads..."
       truncate_path(project.db_path)
@@ -155,12 +157,13 @@ module MonkeyButler
       say "Validating migrations apply..."
       truncate_path(project.db_path)
       migrate
+      say
 
       say "Validating generators..."
       generator_names = options[:generators] || project.generators
       MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
         with_padding do
-          say "Invoking generator '#{generator_class.name}'..."
+          say_status :validate, generator_class.name
           invoke_with_padding(generator_class, :validate, [], options)
         end
       end
