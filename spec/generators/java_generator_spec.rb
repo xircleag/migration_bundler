@@ -7,6 +7,7 @@ describe MonkeyButler::Generators::JavaGenerator do
 
   describe '#generate' do
     before(:each) do
+      puts "Working in directory: #{project_root}"
       invoke!(['generate'])
     end
 
