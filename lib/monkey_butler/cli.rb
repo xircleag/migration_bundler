@@ -72,11 +72,13 @@ module MonkeyButler
       say "Migrations to be applied"
       with_padding do
         say %q{(use "mb migrate" to apply)}
+        say
         with_padding do
           migrations.pending do |version, path|
             say "pending migration: #{path}", :green
           end
         end
+        say
       end
     end
 
@@ -104,9 +106,10 @@ module MonkeyButler
 
       with_padding do
         say "Migrating database..."
+        say
         with_padding do
           migrations.pending do |version, path|
-            say "applying migration: #{path}", :blue
+            say "applying migration: #{path}", :green
             begin
               db.execute_migration(File.read(path))
               db.insert_version(version)
