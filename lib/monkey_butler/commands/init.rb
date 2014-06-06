@@ -73,7 +73,7 @@ module MonkeyButler
       end
 
       def project
-        @project ||= MonkeyButler::Project.new(sanitized_options)
+        @project ||= MonkeyButler::Project.set(sanitized_options)
       end
 
       def sanitized_options

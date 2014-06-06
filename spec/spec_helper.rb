@@ -19,6 +19,7 @@ end
 RSpec.configure do |config|
   config.before do
     ARGV.replace []
+    MonkeyButler::Project.clear
   end
 
   config.include GlobalContext

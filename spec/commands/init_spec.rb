@@ -156,6 +156,13 @@ describe MonkeyButler::Commands::Init do
         output = invoke!([project_root, "--config", 'cocoapods.repo:whatever', '--pretend', '--generators', 'cocoapods'])
         output[:stdout].should =~ /Initializing generator 'cocoapods'.../
       end
+
+      it "writes any changes written to the config back to the file" do
+        expect(Thor::LineEditor).to receive(:readline).with("What is the name of your Cocoapods specs repo?  ", {}).and_return("layerhq")
+        invoke!([project_root, '--generators', 'cocoapods'])
+        project = YAML.load File.read(File.join(project_root, '.monkey_butler.yml'))
+        expect(project['config']['cocoapods.repo']).to eql('layerhq')
+      end
     end
   end
 end
