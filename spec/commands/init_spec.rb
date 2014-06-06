@@ -132,6 +132,12 @@ describe MonkeyButler::Commands::Init do
     end
 
     context "when --bundler option is given" do
+      before(:each) do
+        MonkeyButler::Commands::Init.any_instance.stub(:bundle) do
+          File.open(File.join(project_root, 'Gemfile.lock'), 'w')
+        end
+      end
+
       it "creates a Gemfile" do
         invoke!([project_root, '--bundler'])
         path = File.join(project_root, 'Gemfile')
@@ -147,7 +153,7 @@ describe MonkeyButler::Commands::Init do
 
     context "when --generators option is given" do
       it "informs the user that the generators are being initialized" do
-        output = invoke!([project_root, '--generators', 'cocoapods', '-c', 'cocoapods.repo', 'whatever'])
+        output = invoke!([project_root, "--config", 'cocoapods.repo:whatever', '--pretend', '--generators', 'cocoapods'])
         output[:stdout].should =~ /Initializing generator 'cocoapods'.../
       end
     end

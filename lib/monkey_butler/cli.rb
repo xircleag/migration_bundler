@@ -12,6 +12,8 @@ module MonkeyButler
     include Thor::Actions
     include MonkeyButler::Actions
 
+    class_option :pretend, type: :boolean, aliases: "-p", group: :runtime, desc: "Run but do not make any changes"
+
     # Configures root path for resources (e.g. templates)
     def self.source_root
       File.dirname(__FILE__)

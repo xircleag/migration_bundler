@@ -10,6 +10,7 @@ module MonkeyButler
       class_option :generators, type: :array, aliases: '-g', default: [], desc: "Specify default code generators."
       class_option :bundler, type: :boolean, aliases: '-b', default: false, desc: "Use Bundler to import MonkeyButler into project."
       class_option :config, type: :hash, aliases: '-c', default: {}, desc: "Specify config variables."
+      class_option :pretend, type: :boolean, aliases: "-p", group: :runtime, desc: "Run but do not make any changes"
       desc 'Initializes a new repository into PATH'
 
       def create_repository
@@ -33,12 +34,11 @@ module MonkeyButler
       end
 
       def init_generators
-        project = MonkeyButler::Project.load(destination_root)
         MonkeyButler::Util.generator_classes_named(options[:generators]) do |generator_class|
           say "Initializing generator '#{generator_class.name}'..."
-          invoke(generator_class, %w{init}, [])
+          invoke(generator_class, %w{init})
         end
-        project.save!(destination_root)
+        project.save!(destination_root) unless options['pretend']
         git_add '.monkey_butler.yml'
       end
 
@@ -46,7 +46,7 @@ module MonkeyButler
         if options[:bundler]
           template('templates/Gemfile.erb', "Gemfile")
           git_add "Gemfile"
-          run "bundle"
+          bundle
           git_add "Gemfile.lock"
         end
       end
@@ -65,6 +65,10 @@ module MonkeyButler
       end
 
       protected
+      def bundle
+        run "bundle"
+      end
+
       def project_name
         options[:name] || File.basename(path)
       end
@@ -74,7 +78,7 @@ module MonkeyButler
       end
 
       def sanitized_options
-        ignored_keys = %w{bundler}
+        ignored_keys = %w{bundler pretend}
         options.reject { |k,v| ignored_keys.include?(k) }.merge('name' => project_name)
       end
     end
