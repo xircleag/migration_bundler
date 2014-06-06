@@ -46,6 +46,8 @@ module MonkeyButler
         if options[:bundler]
           template('templates/Gemfile.erb', "Gemfile")
           git_add "Gemfile"
+          run "bundle"
+          git_add "Gemfile.lock"
         end
       end
 
