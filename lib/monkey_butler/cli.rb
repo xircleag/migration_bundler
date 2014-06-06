@@ -155,7 +155,7 @@ module MonkeyButler
     method_option :commit, type: :boolean, aliases: '-c', desc: "Commit package artifacts after build."
     def package
       project = MonkeyButler::Project.load
-      db = MonkeyButler::Database.new(db_path)
+      db = MonkeyButler::Database.new(project.db_path)
       migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
 
       validate
@@ -164,9 +164,9 @@ module MonkeyButler
       git_add '.'
       git :status
 
-      if options['commit'] || ask("Commit package artifacts? (y/n)", limited_to: %w{y n}) == 'y'
-        git "commit -m 'Packaging release #{migrations.latest_version}' ."
-        git "tag #{migrations.latest_version}"
+      if options['commit'] || ask("Commit package artifacts?", limited_to: %w{y n}) == 'y'
+        git commit: "-m 'Packaging release #{migrations.latest_version}' ."
+        git tag: "#{migrations.latest_version}"
       else
         say "Package artifacts were built but not committed. Re-run `mb package` when ready to complete build."
       end
