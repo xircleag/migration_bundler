@@ -35,7 +35,7 @@ module MonkeyButler
       def init_generators
         MonkeyButler::Util.generator_classes_named(options[:generators]) do |generator_class|
           say "Initializing generator '#{generator_class.name}'..."
-          invoke(generator_class, %w{init})
+          invoke(generator_class, %w{init}, [])
         end
         project.save!(destination_root) unless options['pretend']
         git_add '.monkey_butler.yml'
