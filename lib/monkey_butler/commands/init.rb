@@ -39,6 +39,7 @@ module MonkeyButler
           invoke(generator_class, %w{init}, [])
         end
         project.save!(destination_root)
+        git_add '.monkey_butler.yml'
       end
 
       def generate_gemfile
