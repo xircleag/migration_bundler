@@ -7,6 +7,9 @@ module MonkeyButler
         unless project.config['cocoapods.repo']
           project.config['cocoapods.repo'] = ask("What is the name of your Cocoapods specs repo? ")
         end
+        if options['bundler']
+          append_to_file 'Gemfile', "gem 'cocoapods'"
+        end
       end
 
       def generate

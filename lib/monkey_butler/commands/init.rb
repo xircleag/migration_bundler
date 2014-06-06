@@ -32,22 +32,22 @@ module MonkeyButler
         git_add '.monkey_butler.yml'
       end
 
-      def init_generators
-        MonkeyButler::Util.generator_classes_named(options[:generators]) do |generator_class|
-          say "Initializing generator '#{generator_class.name}'..."
-          invoke(generator_class, %w{init}, [])
-        end
-        project.save!(destination_root) unless options['pretend']
-        git_add '.monkey_butler.yml'
-      end
-
       def generate_gemfile
-        if options[:bundler]
+        if options['bundler']
           template('templates/Gemfile.erb', "Gemfile")
           git_add "Gemfile"
           bundle
           git_add "Gemfile.lock"
         end
+      end
+
+      def init_generators
+        MonkeyButler::Util.generator_classes_named(options[:generators]) do |generator_class|
+          say "Initializing generator '#{generator_class.name}'..."
+          invoke(generator_class, :init, [], options)
+        end
+        project.save!(destination_root) unless options['pretend']
+        git_add '.monkey_butler.yml'
       end
 
       def touch_database

@@ -161,7 +161,7 @@ module MonkeyButler
       generator_names = options[:generators] || project.generators
       MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
         say "Invoking generator '#{generator_class.name}'..."
-        invoke(generator_class, "generate")
+        invoke(generator_class, :generate, [], options)
       end
     end
 
