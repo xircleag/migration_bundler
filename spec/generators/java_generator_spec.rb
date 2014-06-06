@@ -26,7 +26,7 @@ describe MonkeyButler::Generators::JavaGenerator do
       expect(Dir.entries(File.join(project_root, 'project/src/main/resources/resources/migrations')).size).not_to eq(2)
     end
 
-    it "should have project/monkeybutler/build/libs/monkeybutler.jar, monkeybutler-javadoc.jar files" do
+    it "should have project/build/libs/monkeybutler.jar, monkeybutler-javadoc.jar files" do
       expect(File.file?(File.join(project_root, 'project/build/libs/monkeybutler-0.0.1.jar'))).to eq(true)
     end
   end
