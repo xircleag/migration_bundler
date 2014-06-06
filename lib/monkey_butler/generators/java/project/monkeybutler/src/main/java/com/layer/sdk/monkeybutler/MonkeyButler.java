@@ -6,22 +6,27 @@
  */
 package com.layer.sdk.monkeybutler;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class MonkeyButler {
     public static final long NO_VERSIONS = -1;
 
-    public static void bootstrap(Context context, SQLiteDatabase db) throws SQLException {
-        SQL.createSchema(context, db);
+    public static void bootstrap(SQLiteDatabase db) throws SQLException, IOException {
+        SQL.executeResource(db, "schema/schema_create.sql");
     }
 
     /**
@@ -77,26 +82,50 @@ public class MonkeyButler {
     /**
      * Generates a list of Migration objects from SQL files located in the assets/migrations
      * directory.  Migration SQL file names must conform to the Migration.MIGRATION_PATTERN
-     * pattern and be readily parsed by SQL.executeAsset().
+     * pattern and be readily parsed by SQL.executeResource().
      *
-     * @param context Context from which to load assets.
      * @return A list of available Migrations as loaded from the assets/migrations directory.
      * @see com.layer.sdk.monkeybutler.Migration#MIGRATION_PATTERN
-     * @see com.layer.sdk.monkeybutler.SQL#executeAsset(android.content.Context,
-     * android.database.sqlite.SQLiteDatabase, String)
+     * @see com.layer.sdk.monkeybutler.SQL#executeResource(android.database.sqlite.SQLiteDatabase,
+     * String)
      */
-    public static List<Migration> getAvailableMigrations(Context context) {
+    public static List<Migration> getAvailableMigrations() {
         List<Migration> migrations = new LinkedList<Migration>();
+        Set<String> paths = getResourcePathsByPrefix("migrations/");
+        for (String path : paths) {
+            migrations.add(new Migration(path));
+        }
+        Collections.sort(migrations);
+        return migrations;
+    }
+
+    private static Set<String> getResourcePathsByPrefix(String prefix) {
+        Set<String> paths = new HashSet<String>();
         try {
-            String[] migrationFiles = context.getAssets().list("migrations");
-            for (String migrationFile : migrationFiles) {
-                migrations.add(new Migration("migrations/" + migrationFile));
+            Enumeration<JarEntry> entries = resourceEntries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                String path = entry.getName();
+                if (path.startsWith(prefix)) {
+                    paths.add(path);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Collections.sort(migrations);
-        return migrations;
+        return paths;
+    }
+
+    private static Enumeration<JarEntry> resourceEntries() throws IOException {
+        Enumeration<URL> target = MonkeyButler.class.getClassLoader()
+                .getResources("bananabunch/RIPEBANANA.txt");
+        if (target.hasMoreElements()) {
+            URL url = target.nextElement();
+            JarURLConnection urlcon = (JarURLConnection) (url.openConnection());
+            JarFile jar = urlcon.getJarFile();
+            return jar.entries();
+        }
+        return null;
     }
 
     /**
@@ -108,16 +137,15 @@ public class MonkeyButler {
      * greater than the origin version.  If no available migrations are greater than the origin
      * version, no migrations are applied.
      *
-     * @param context Context from which to load assets.
-     * @param db      Database on which to operate.
+     * @param db Database on which to operate.
      * @return The number of migrations applied.
      * @see #getOriginVersion(android.database.sqlite.SQLiteDatabase)
-     * @see #getAvailableMigrations(android.content.Context)
+     * @see #getAvailableMigrations()
      * @see #getAllVersions(android.database.sqlite.SQLiteDatabase)
-     * @see com.layer.sdk.monkeybutler.Migration#migrateDatabase(android.content.Context,
-     * android.database.sqlite.SQLiteDatabase)
+     * @see com.layer.sdk.monkeybutler.Migration#migrateDatabase(
+     *android.database.sqlite.SQLiteDatabase)
      */
-    public static int applyMigrations(Context context, SQLiteDatabase db) {
+    public static int applyMigrations(SQLiteDatabase db) throws IOException {
         int numApplied = 0;
         try {
             db.beginTransaction();
@@ -127,7 +155,7 @@ public class MonkeyButler {
             try {
                 originVersion = getOriginVersion(db);
             } catch (SQLException e) {
-                bootstrap(context, db);
+                bootstrap(db);
                 originVersion = getOriginVersion(db);
             }
 
@@ -135,7 +163,7 @@ public class MonkeyButler {
             HashSet<Long> appliedVersions = getAllVersions(db);
 
             // (3) Apply unapplied migrations.
-            for (Migration migration : getAvailableMigrations(context)) {
+            for (Migration migration : getAvailableMigrations()) {
                 long version = migration.getVersion();
 
                 if (version <= originVersion) {
@@ -149,7 +177,7 @@ public class MonkeyButler {
                 }
 
                 // Apply this new migration.
-                if (migration.migrateDatabase(context, db)) {
+                if (migration.migrateDatabase(db)) {
                     numApplied++;
                 } else {
                     throw new IllegalStateException("Could not apply migration.");

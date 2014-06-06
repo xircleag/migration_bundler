@@ -7,7 +7,6 @@
 package com.layer.sdk.monkeybutler;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -41,9 +40,9 @@ public class Migration implements Comparable<Migration> {
         return mDescription;
     }
 
-    public boolean migrateDatabase(Context context, SQLiteDatabase db) {
+    public boolean migrateDatabase(SQLiteDatabase db) {
         try {
-            SQL.executeAsset(context, db, mPath);
+            SQL.executeResource(db, mPath);
             ContentValues values = new ContentValues();
             values.put("version", getVersion());
             db.insert("schema_migrations", null, values);

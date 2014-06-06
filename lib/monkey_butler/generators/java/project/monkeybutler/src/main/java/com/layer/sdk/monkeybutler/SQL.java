@@ -6,7 +6,6 @@
  */
 package com.layer.sdk.monkeybutler;
 
-import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.io.BufferedReader;
@@ -19,36 +18,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 public class SQL {
-    public static void createSchema(Context context, SQLiteDatabase db) {
-        try {
-            executeAsset(context, db, "schema/schema_create.sql");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void dropSchema(Context context, SQLiteDatabase db) {
-        try {
-            executeAsset(context, db, "schema/schema_drop.sql");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * SQL files must have empty newlines between statements.
      *
-     * @param assetPath Path of the res/assets sql file to execute.
+     * @param resourcePath Path of the resource sql file to execute.
      * @return A string array with one statement, empty line, or comment per entry.
      * @throws java.io.IOException
      */
-    private static List<String> assetToStatements(Context context, String assetPath)
-            throws IOException {
+    private static List<String> resourceToStatements(String resourcePath) throws IOException {
         InputStream in = null;
         BufferedReader reader = null;
 
         try {
-            in = context.getAssets().open(assetPath);
+            in = MonkeyButler.class.getClassLoader().getResourceAsStream(resourcePath);
             reader = new BufferedReader(new InputStreamReader(in));
 
             List<String> statements = new LinkedList<String>();
@@ -59,7 +41,7 @@ public class SQL {
                 // End of file; add current builder and break.
                 if (line == null) {
                     if (builder.length() > 0) {
-                        statements.add(builder.toString());
+                        statements.add(builder.toString().trim());
                     }
                     break;
                 }
@@ -67,7 +49,7 @@ public class SQL {
                 // Empty line; add current builder, start a new builder, and continue.
                 if (line.trim().isEmpty()) {
                     if (builder.length() > 0) {
-                        statements.add(builder.toString());
+                        statements.add(builder.toString().trim());
                     }
                     builder = new StringBuilder();
                     continue;
@@ -115,13 +97,13 @@ public class SQL {
     /**
      * Executes the contents of a given `raw` SQL resource file.
      *
-     * @param db        DB on which to execute.
-     * @param assetPath Path of the res/assets sql file to execute.
+     * @param db           DB on which to execute.
+     * @param resourcePath Path of the res/assets sql file to execute.
      * @throws java.io.IOException
      */
-    public static void executeAsset(Context context, SQLiteDatabase db, String assetPath)
+    public static void executeResource(SQLiteDatabase db, String resourcePath)
             throws IOException {
-        List<String> statements = assetToStatements(context, assetPath);
+        List<String> statements = resourceToStatements(resourcePath);
 
         for (String statement : statements) {
             statement = statement.trim();

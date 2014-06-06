@@ -1,7 +1,6 @@
 package com.layer.sdk.monkeybutler;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -30,19 +29,17 @@ public class MonkeyButlerTests extends AndroidTestCase {
 
     public void testBootstrap() throws Exception {
         SQLiteDatabase db = makeDb();
-        final Context appContext = getContext().getApplicationContext();
 
         final ContentValues values = new ContentValues();
         values.put("version", 100L);
 
         assertThat(db.insert("schema_migrations", null, values)).isEqualTo(-1);
-        MonkeyButler.bootstrap(appContext, db);
+        MonkeyButler.bootstrap(db);
         assertThat(db.insert("schema_migrations", null, values)).isNotEqualTo(-1);
     }
 
     public void testOrigin() throws Exception {
         SQLiteDatabase db = makeDb();
-        final Context appContext = getContext().getApplicationContext();
 
         final ContentValues values1 = new ContentValues();
         values1.put("version", 100L);
@@ -51,7 +48,7 @@ public class MonkeyButlerTests extends AndroidTestCase {
         final ContentValues values3 = new ContentValues();
         values3.put("version", 10L);
 
-        MonkeyButler.bootstrap(appContext, db);
+        MonkeyButler.bootstrap(db);
         assertThat(db.insert("schema_migrations", null, values1)).isNotEqualTo(-1);
         assertThat(MonkeyButler.getOriginVersion(db)).isEqualTo(100L);
         assertThat(db.insert("schema_migrations", null, values2)).isNotEqualTo(-1);
@@ -61,9 +58,7 @@ public class MonkeyButlerTests extends AndroidTestCase {
     }
 
     public void testGetAvailableMigrations() throws Exception {
-        final Context appContext = getContext().getApplicationContext();
-
-        List<Migration> migrations = MonkeyButler.getAvailableMigrations(appContext);
+        List<Migration> migrations = MonkeyButler.getAvailableMigrations();
 
         assertThat(migrations).hasSize(7);
 
@@ -86,10 +81,9 @@ public class MonkeyButlerTests extends AndroidTestCase {
 
     public void testApplyMigrations() throws Exception {
         SQLiteDatabase db = makeDb();
-        final Context appContext = getContext().getApplicationContext();
 
         // Verify that 7 migrations were applied and that the new origin is 10
-        assertThat(MonkeyButler.applyMigrations(appContext, db)).isEqualTo(7);
+        assertThat(MonkeyButler.applyMigrations(db)).isEqualTo(7);
         assertThat(MonkeyButler.getOriginVersion(db)).isEqualTo(10);
 
         // Verify migrated table
@@ -107,7 +101,7 @@ public class MonkeyButlerTests extends AndroidTestCase {
         cursor.close();
 
         // Verify that no migrations remain
-        assertThat(MonkeyButler.applyMigrations(appContext, db)).isEqualTo(0);
+        assertThat(MonkeyButler.applyMigrations(db)).isEqualTo(0);
     }
 
 }
