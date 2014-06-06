@@ -32,7 +32,7 @@ module MonkeyButler
 
       protected
       def project
-        @project ||= MonkeyButler::Project.load
+        @project ||= MonkeyButler::Project.load(destination_root)
       end
 
       def database
