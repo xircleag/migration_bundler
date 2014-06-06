@@ -13,16 +13,24 @@ module MonkeyButler
       end
 
       def generate
+        invoke :validate
         template('podspec.erb', podspec_name)
       end
 
+      def validate
+        fail Error, "Invalid configuration: cocoapods.repo is not configured." if cocoapods_repo.nil?
+      end
+
       def push
-        cocoapods_repo = project.config['cocoapods.repo']
-        fail Error, "Cannot push to CocoaPods: cocoapods.repo is not configured." if cocoapods_repo.nil?
+        invoke :validate
         run "pod repo push #{cocoapods_repo} #{podspec_name}"
       end
 
       private
+      def cocoapods_repo
+        project.config['cocoapods.repo']
+      end
+      
       def podspec_name
         "#{project.name}.podspec"
       end

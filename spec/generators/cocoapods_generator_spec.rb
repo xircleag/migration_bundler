@@ -74,7 +74,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
       it "fails with an error" do
         remove_cocoapods_repo_from_config
         output = invoke!(['push'])
-        output[:stderr].should =~ /Cannot push to CocoaPods: cocoapods.repo is not configured./
+        output[:stderr].should =~ /Invalid configuration: cocoapods.repo is not configured./
       end
     end
 
@@ -84,6 +84,19 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
         output[:stdout].should =~ /run  pod repo push example_specs_repo sandbox.podspec/
       end
     end
+  end
+
+  describe "#validate" do
+    context "when the cocoapods repo is not configured" do
+      before(:each) do
+        remove_cocoapods_repo_from_config
+      end
+
+      it "fails with error" do
+        output = invoke!(['validate'])
+        output[:stderr].should =~ /Invalid configuration: cocoapods.repo is not configured./
+      end
+    end    
   end
 
   def remove_cocoapods_repo_from_config

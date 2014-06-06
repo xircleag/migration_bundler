@@ -277,6 +277,19 @@ describe MonkeyButler::CLI do
         output[:stdout].should =~ /Validation successful./
       end
     end
+
+    context "when the git url is not configured" do
+      before(:each) do
+        Dir.chdir(project_root) do
+          system("git remote remove origin")
+        end
+      end
+
+      it "fails with error" do
+        output = invoke!(['validate'])
+        output[:stderr].should =~ /Invalid configuration: git does not have a remote named 'origin'./
+      end
+    end
   end
 
   describe '#new' do

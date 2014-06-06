@@ -30,6 +30,11 @@ module MonkeyButler
         # Default implementation does nothing
       end
 
+      desc "push", "Validates the environment."
+      def validate
+        # Default implementation does nothing
+      end
+
       protected
       def project
         @project ||= MonkeyButler::Project.load(destination_root)
