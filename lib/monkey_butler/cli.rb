@@ -132,7 +132,10 @@ module MonkeyButler
 
       say "Migration to version #{target_version} complete."
 
-      invoke :dump if options[:dump]
+      if options['dump']
+        say
+        invoke :dump, [], options
+      end
     end
 
     desc "validate", "Validate that schema loads and all migrations are linearly applicable"
