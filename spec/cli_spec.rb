@@ -271,9 +271,9 @@ describe MonkeyButler::CLI do
     end
   end
 
-  describe '#create' do
+  describe '#new' do
     it "generates a new migration with the given name" do
-      invoke!(%w{create add_column_to_table})
+      invoke!(%w{new add_column_to_table})
       migration = Dir.entries(File.join(project_root, 'migrations')).detect { |f| f =~ /add_column_to_table\.sql/ }
       migration.should_not be_nil
     end

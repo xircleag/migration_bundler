@@ -17,7 +17,7 @@ module MonkeyButler
       File.dirname(__FILE__)
     end
 
-    register(MonkeyButler::Commands::Init, "init", "init PATH", "Initializes a Monkey Butler project at PATH")
+    register(MonkeyButler::Commands::Init, "init", "init PATH", "Initialize a Monkey Butler project at PATH")
     register(MonkeyButler::Commands::Dump, "dump", "dump", "Dump project schema from a database")
 
     # Workaround bug in Thor option registration
@@ -46,8 +46,8 @@ module MonkeyButler
       say "Loaded schema at version #{db.current_version}"
     end
 
-    desc "create NAME", "Create a new migration"
-    def create(name)
+    desc "new NAME", "Create a new migration"
+    def new(name)
       migration_name = MonkeyButler::Util.migration_named(name)
       empty_directory('migrations')
       template('templates/migration.sql.erb', "migrations/#{migration_name}")
