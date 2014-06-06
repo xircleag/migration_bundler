@@ -20,6 +20,10 @@ module MonkeyButler
     register(MonkeyButler::Commands::Init, "init", "init PATH", "Initializes a Monkey Butler project at PATH")
     register(MonkeyButler::Commands::Dump, "dump", "dump", "Dump project schema from a database")
 
+    # Workaround bug in Thor option registration
+    tasks["init"].options = MonkeyButler::Commands::Init.class_options
+    tasks["dump"].options = MonkeyButler::Commands::Dump.class_options
+
     desc "load", "Load project schema into a database"
     method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     def load

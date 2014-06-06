@@ -8,8 +8,8 @@ module MonkeyButler
       argument :path, type: :string, desc: 'Location to initialize the repository into', required: true
       class_option :name, type: :string, aliases: '-n', desc: "Specify project name"
       class_option :generators, type: :array, aliases: '-g', default: [], desc: "Specify default code generators."
-      class_option :config, type: :hash, aliases: '-c', default: {}, :required => true
       class_option :bundler, type: :boolean, aliases: '-b', default: false, desc: "Use Bundler to import MonkeyButler into project."
+      class_option :config, type: :hash, aliases: '-c', default: {}, desc: "Specify config variables."
       desc 'Initializes a new repository into PATH'
 
       def create_repository
