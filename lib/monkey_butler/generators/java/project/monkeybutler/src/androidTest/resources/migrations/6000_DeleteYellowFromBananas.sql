@@ -1,1 +1,0 @@
-DELETE FROM bananas WHERE type = 'yellow';
