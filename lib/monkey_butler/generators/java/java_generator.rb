@@ -3,6 +3,12 @@ require 'monkey_butler/generators/base'
 module MonkeyButler
   module Generators
     class JavaGenerator < MonkeyButler::Generators::Base
+      def clean
+        Dir.chdir(File.join(File.dirname(__FILE__), "project")) do
+          `gradle clean`
+        end
+      end
+
       def generate
         # Copy Android project
         FileUtils.mkdir_p "project"
@@ -18,7 +24,7 @@ module MonkeyButler
 
         # Build
         Dir.chdir("project") do
-          `gradle clean javadocRelease jarRelease`
+          `gradle javadocRelease jarRelease`
         end
       end
 

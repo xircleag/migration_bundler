@@ -6,6 +6,10 @@ describe MonkeyButler::Generators::JavaGenerator do
   let!(:project_root) { clone_temp_sandbox }
 
   describe '#generate' do
+    before(:suite) do
+      invoke!(['clean'])
+    end
+
     before(:each) do
       puts "Working in directory: #{project_root}"
       invoke!(['generate'])
