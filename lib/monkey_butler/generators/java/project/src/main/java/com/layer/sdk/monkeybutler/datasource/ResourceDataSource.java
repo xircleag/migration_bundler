@@ -23,8 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import sun.net.www.protocol.file.FileURLConnection;
 public class ResourceDataSource implements DataSource {
     private static final String BASE = "resources";
     private static final String SCHEMA = "schema";
@@ -95,7 +93,7 @@ public class ResourceDataSource implements DataSource {
                             migrations.add(new ResourceMigration(path));
                         }
                     }
-                } else if (connection instanceof FileURLConnection) {
+                } else {
                     // The schema resource is expanded onto the filesystem; jump to the migrations
                     File resourceDir = new File(url.toURI()).getParentFile().getParentFile();
                     File migrationsDir = new File(resourceDir, MIGRATIONS);
