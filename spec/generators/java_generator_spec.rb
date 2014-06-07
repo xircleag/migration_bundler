@@ -7,7 +7,7 @@ describe MonkeyButler::Generators::JavaGenerator do
 
   describe '#generate' do
     before(:each) do
-      puts "Working in directory: #{project_root}"
+      puts "Working in directory: #{project_root}\n"
       invoke!(['generate'])
     end
 
@@ -26,9 +26,43 @@ describe MonkeyButler::Generators::JavaGenerator do
       expect(Dir.entries(File.join(project_root, 'project/src/main/resources/resources/migrations')).size).not_to eq(2)
     end
 
-    it "should have project/build/libs/monkeybutler.jar, monkeybutler-javadoc.jar files" do
+    it "should have project/build/libs/monkeybutler-0.0.1.jar files" do
       expect(File.file?(File.join(project_root, 'project/build/libs/monkeybutler-0.0.1.jar'))).to eq(true)
     end
+
+    it "should have a schema packaged in the JAR" do
+      jar_path = File.join(project_root, 'project/build/libs/monkeybutler-0.0.1.jar')
+      jar_schema = `jar tf #{jar_path} | grep -e resources/schema/.*[.]sql`.strip
+      expect(jar_schema).to eq("resources/schema/mb_schema.sql")
+    end
+
+    it "should have all migrations packaged in the JAR" do
+      # Create a hash of all expected migrations
+      expected_migrations = Hash.new
+      Dir.foreach(File.join(project_root, "migrations")) do |entry|
+        if !entry.end_with? ".sql" then
+          next
+        end
+        expected_migrations[entry] = true
+      end
+      
+      # Create a array of all migrations packaged in the JAR
+      jar_path = File.join(project_root, 'project/build/libs/monkeybutler-0.0.1.jar')
+      jar_migrations = `jar tf #{jar_path} | grep -e resources/migrations/.*[.]sql`
+      jar_migration_array = jar_migrations.split(/\r?\n/)
+
+      # Verify that the expected and actual have the same size
+      expect(jar_migration_array.length).to eq(expected_migrations.length)
+
+      # Verify that all JAR'd migrations were expected
+      jar_migration_array.each { |jar_migration|
+        length = jar_migration.length - "resources/migrations/".length
+        migration = jar_migration[-length, length]
+        expect(expected_migrations[migration]).to eq(true)
+      }
+
+    end
+
   end
 
 end
