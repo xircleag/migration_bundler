@@ -26,7 +26,7 @@ public class ResourceMigration extends Migration {
     }
 
     @Override
-    protected InputStream getStream() {
+    public InputStream getStream() {
         try {
             switch (mType) {
                 case JAR:

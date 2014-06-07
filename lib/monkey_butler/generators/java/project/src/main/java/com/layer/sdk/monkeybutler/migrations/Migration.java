@@ -40,7 +40,7 @@ public abstract class Migration implements Comparable<Migration> {
         return mDescription;
     }
 
-    protected abstract InputStream getStream();
+    public abstract InputStream getStream();
 
     @Override
     public int compareTo(Migration migration) {
