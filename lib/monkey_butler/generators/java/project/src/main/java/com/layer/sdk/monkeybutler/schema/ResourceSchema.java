@@ -9,9 +9,13 @@ package com.layer.sdk.monkeybutler.schema;
 import com.layer.sdk.monkeybutler.MonkeyButler;
 
 import java.io.InputStream;
+
 public class ResourceSchema extends Schema {
     public ResourceSchema(String path) {
         super(path);
+        if (MonkeyButler.class.getClassLoader().getResource(path) == null) {
+            throw new IllegalArgumentException("Resource does not contain '" + path + "'");
+        }
     }
 
     @Override
