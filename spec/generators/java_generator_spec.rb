@@ -5,15 +5,26 @@ describe MonkeyButler::Generators::JavaGenerator do
   let(:thor_class) { MonkeyButler::Generators::JavaGenerator }
   let!(:project_root) { clone_temp_sandbox }
 
+  def get_version
+    Dir.chdir(File.join(project_root, 'project')) do
+      return `cat version.gradle | grep -oe "['][^']*[']"`.strip.delete "'"
+    end    
+  end
+
+  def get_jar_path
+    return File.join(project_root, 'project/build/libs/monkeybutler-' + get_version + '.jar')
+  end
+
   describe '#generate' do
     before(:each) do
       puts "Working in directory: #{project_root}\n"
       invoke!(['generate'])
     end
 
-    it "should have a project/build.gradle file" do
+    it "should have project/build.gradle and version.gradle files" do
       expect(File.directory?(File.join(project_root, 'project'))).to eq(true)
       expect(File.file?(File.join(project_root, 'project/build.gradle'))).to eq(true)
+      expect(File.file?(File.join(project_root, 'project/version.gradle'))).to eq(true)
     end
 
     it "should have a schema file in resources/resources/schema" do
@@ -26,13 +37,12 @@ describe MonkeyButler::Generators::JavaGenerator do
       expect(Dir.entries(File.join(project_root, 'project/src/main/resources/resources/migrations')).size).not_to eq(2)
     end
 
-    it "should have project/build/libs/monkeybutler-0.0.1.jar files" do
-      expect(File.file?(File.join(project_root, 'project/build/libs/monkeybutler-0.0.1.jar'))).to eq(true)
+    it "should have project/build/libs/monkeybutler-[version].jar files" do
+      expect(File.file?(get_jar_path)).to eq(true)
     end
 
     it "should have a schema packaged in the JAR" do
-      jar_path = File.join(project_root, 'project/build/libs/monkeybutler-0.0.1.jar')
-      jar_schema = `jar tf #{jar_path} | grep -e resources/schema/.*[.]sql`.strip
+      jar_schema = `jar tf #{get_jar_path} | grep -e resources/schema/.*[.]sql`.strip
       expect(jar_schema).to eq("resources/schema/mb_schema.sql")
     end
 
@@ -47,8 +57,7 @@ describe MonkeyButler::Generators::JavaGenerator do
       end
       
       # Create a array of all migrations packaged in the JAR
-      jar_path = File.join(project_root, 'project/build/libs/monkeybutler-0.0.1.jar')
-      jar_migrations = `jar tf #{jar_path} | grep -e resources/migrations/.*[.]sql`
+      jar_migrations = `jar tf #{get_jar_path} | grep -e resources/migrations/.*[.]sql`
       jar_migration_array = jar_migrations.split(/\r?\n/)
 
       # Verify that the expected and actual have the same size
@@ -60,9 +69,6 @@ describe MonkeyButler::Generators::JavaGenerator do
         migration = jar_migration[-length, length]
         expect(expected_migrations[migration]).to eq(true)
       }
-
     end
-
   end
-
 end
