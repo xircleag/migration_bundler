@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-version = '0.0.1'
+apply from: project.file("version.gradle")
 
 compileJava {
     sourceCompatibility = 1.6
