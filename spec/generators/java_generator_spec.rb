@@ -70,5 +70,11 @@ describe MonkeyButler::Generators::JavaGenerator do
         expect(expected_migrations[migration]).to eq(true)
       }
     end
+
+    it "should have a MonkeyButler.class packaged in the JAR" do
+      jar_class = `jar tf #{get_jar_path} | grep -e "com/layer/sdk/monkeybutler/MonkeyButler.class"`.strip
+      expect(jar_class).to eq("com/layer/sdk/monkeybutler/MonkeyButler.class")
+    end
+
   end
 end
