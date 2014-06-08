@@ -65,7 +65,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
     end
 
     it "has resource_bundles" do
-      expect(podspec.resource_bundles).to eq({"MonkeyButler"=>["migrations/*", "sandbox.sql"]})
+      expect(podspec.resource_bundles).to eq({"sandbox"=>["migrations/*", "sandbox.sql"]})
     end
   end
 

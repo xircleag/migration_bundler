@@ -8,5 +8,5 @@ Pod::Spec.new do |s|
   s.license      =  'Commercial'
   s.requires_arc = true
 
-  s.resource_bundles = { 'MonkeyButler' => ['migrations/*', '<%= project.schema_path -%>'] }
+  s.resource_bundles = { '<%= project.name -%>' => ['migrations/*', '<%= project.schema_path -%>'] }
 end
