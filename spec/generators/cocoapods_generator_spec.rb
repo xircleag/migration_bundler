@@ -3,7 +3,7 @@ require 'monkey_butler/generators/cocoapods/cocoapods_generator'
 
 module Pod
   class Spec
-    attr_accessor :name, :version, :summary, :homepage, :author, :source, :license, :resource_bundles
+    attr_accessor :name, :version, :summary, :homepage, :author, :source, :license, :resource_bundles, :requires_arc
 
     def initialize(hash = {})
       yield self if block_given?
@@ -49,7 +49,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
     end
 
     it "has homepage" do
-      expect(podspec.homepage).to eq('')
+      expect(podspec.homepage).to eq('git@github.com:layerhq/monkey_butler_sandbox.git')
     end
 
     it "has author" do
@@ -81,7 +81,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
     context "when cocoapods.repo is configured" do
       it "invokes pod push" do
         output = invoke!(['push', '--pretend'])
-        output[:stdout].should =~ /run  pod repo push example_specs_repo sandbox.podspec/
+        output[:stdout].should =~ /run  pod repo push --allow-warnings example_specs_repo sandbox.podspec/
       end
     end
   end
@@ -96,7 +96,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
         output = invoke!(['validate'])
         output[:stderr].should =~ /Invalid configuration: cocoapods.repo is not configured./
       end
-    end    
+    end
   end
 
   def remove_cocoapods_repo_from_config

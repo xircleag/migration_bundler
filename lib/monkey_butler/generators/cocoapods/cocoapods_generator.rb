@@ -23,14 +23,14 @@ module MonkeyButler
 
       def push
         invoke :validate
-        run "pod repo push #{cocoapods_repo} #{podspec_name}"
+        run "pod repo push --allow-warnings #{cocoapods_repo} #{podspec_name}"
       end
 
       private
       def cocoapods_repo
         project.config['cocoapods.repo']
       end
-      
+
       def podspec_name
         "#{project.name}.podspec"
       end
