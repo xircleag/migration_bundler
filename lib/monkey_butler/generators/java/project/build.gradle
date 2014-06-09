@@ -40,6 +40,10 @@ task testSourceJar(type: Jar) {
     from sourceSets.test.allJava
 }
 
+task Jar(type: Jar) {
+    jar.archiveName = "monkeybutler-" + version + ".jar"
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
