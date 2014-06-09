@@ -441,8 +441,10 @@ describe MonkeyButler::CLI do
           point_release = "#{migrations.latest_version}.1"
 
           stub_questions
-          output = invoke!(%w{package --commit})
-          output[:stdout].should =~ /git tag #{point_release}/
+          output = invoke!(%w{package --commit --quiet})
+          Dir.chdir(project_root) do
+            project.git_latest_tag.should == point_release
+          end
         end
       end
     end

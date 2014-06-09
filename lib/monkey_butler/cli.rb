@@ -12,7 +12,7 @@ module MonkeyButler
     include Thor::Actions
     include MonkeyButler::Actions
 
-    class_option :pretend, type: :boolean, aliases: "-p", group: :runtime, desc: "Run but do not make any changes"
+    add_runtime_options!
 
     # Configures root path for resources (e.g. templates)
     def self.source_root
@@ -197,7 +197,7 @@ module MonkeyButler
       say
 
       git_add '.'
-      git :status
+      git :status unless options['quiet']
 
       show_diff = options['diff'] != false && (options['diff'] || ask("Review package diff?", limited_to: %w{y n}) == 'y')
       git diff: '--cached' if show_diff
@@ -205,7 +205,7 @@ module MonkeyButler
       commit = options['commit'] != false && (options['commit'] || ask("Commit package artifacts?", limited_to: %w{y n}) == 'y')
       if commit
         tag = unique_tag_for_version(migrations.latest_version)
-        git commit: "-m 'Packaging release #{tag}' ."
+        git commit: "#{options['quiet'] && '-q '}-m 'Packaging release #{tag}' ."
         git tag: "#{tag}"
       else
         say "Package artifacts were built but not committed. Re-run `mb package` when ready to complete build."
