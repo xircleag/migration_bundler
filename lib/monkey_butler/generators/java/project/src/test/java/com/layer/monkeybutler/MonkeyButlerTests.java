@@ -1,9 +1,9 @@
-package com.layer.sdk.monkeybutler;
+package com.layer.monkeybutler;
 
-import com.layer.sdk.monkeybutler.migrations.Migration;
-import com.layer.sdk.monkeybutler.migrations.ResourceMigration;
-import com.layer.sdk.monkeybutler.schema.ResourceSchema;
-import com.layer.sdk.monkeybutler.schema.Schema;
+import com.layer.monkeybutler.migrations.Migration;
+import com.layer.monkeybutler.migrations.ResourceMigration;
+import com.layer.monkeybutler.schema.ResourceSchema;
+import com.layer.monkeybutler.schema.Schema;
 
 import junit.framework.TestCase;
 

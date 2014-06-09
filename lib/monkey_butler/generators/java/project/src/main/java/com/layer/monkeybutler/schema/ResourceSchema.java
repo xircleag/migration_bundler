@@ -4,9 +4,9 @@
  * Created by Steven Jones on 6/6/14
  * Copyright (c) 2013 Layer. All rights reserved.
  */
-package com.layer.sdk.monkeybutler.schema;
+package com.layer.monkeybutler.schema;
 
-import com.layer.sdk.monkeybutler.MonkeyButler;
+import com.layer.monkeybutler.MonkeyButler;
 
 import java.io.InputStream;
 

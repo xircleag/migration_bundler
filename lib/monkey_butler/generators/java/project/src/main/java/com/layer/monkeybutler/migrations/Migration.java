@@ -4,7 +4,7 @@
  * Created by Steven Jones on 6/4/14
  * Copyright (c) 2013 Layer. All rights reserved.
  */
-package com.layer.sdk.monkeybutler.migrations;
+package com.layer.monkeybutler.migrations;
 
 import java.io.InputStream;
 import java.util.regex.Matcher;

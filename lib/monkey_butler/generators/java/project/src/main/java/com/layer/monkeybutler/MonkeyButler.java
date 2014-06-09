@@ -4,12 +4,12 @@
  * Created by Steven Jones on 6/4/14
  * Copyright (c) 2013 Layer. All rights reserved.
  */
-package com.layer.sdk.monkeybutler;
+package com.layer.monkeybutler;
 
-import com.layer.sdk.monkeybutler.datasource.DataSource;
-import com.layer.sdk.monkeybutler.datasource.ResourceDataSource;
-import com.layer.sdk.monkeybutler.migrations.Migration;
-import com.layer.sdk.monkeybutler.schema.Schema;
+import com.layer.monkeybutler.datasource.DataSource;
+import com.layer.monkeybutler.datasource.ResourceDataSource;
+import com.layer.monkeybutler.migrations.Migration;
+import com.layer.monkeybutler.schema.Schema;
 
 import java.util.Arrays;
 import java.util.Collections;
