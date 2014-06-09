@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   s.summary      =  "Packages the database schema and migrations for <%= project.name -%>"
   s.homepage     = "<%= project.config['homepage'] || project.git_url %>"
   s.author       =  { "<%= git_user_name -%>" => "<%= git_user_email -%>" }
-  s.source       =  { :git => "<%= project.git_url -%>", :tag => s.version.to_s }
+  s.source       =  { :git => "<%= project.git_url -%>", :tag => "<%= project.git_tag_for_version(migrations.latest_version) || migrations.latest_version -%>" }
   s.license      =  'Commercial'
   s.requires_arc = true
 

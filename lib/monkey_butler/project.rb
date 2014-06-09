@@ -41,6 +41,16 @@ module MonkeyButler
       @git_url ||= `git config remote.origin.url`.chomp
     end
 
+    def git_latest_tag
+      git_tag_for_version(nil)
+    end
+
+    def git_tag_for_version(version)
+      pattern = version && "#{version}*"
+      tag = `git tag -l --sort=-v:refname #{pattern} | head -n 1`.chomp
+      tag.empty? ? nil : tag
+    end
+
     def save!(path)
       project_path = File.join(path, '.monkey_butler.yml')
       File.open(project_path, 'w') { |f| f << YAML.dump(self.to_hash) }
