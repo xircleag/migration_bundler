@@ -328,4 +328,126 @@ describe MonkeyButler::CLI do
       end
     end
   end
+
+  describe '#package' do
+    before(:each) do
+      sql = MonkeyButler::Util.strip_leading_whitespace <<-SQL
+        #{MonkeyButler::Database.create_schema_migrations_sql}
+        INSERT INTO schema_migrations(version) VALUES ('#{MonkeyButler::Util.migration_timestamp}');
+      SQL
+      File.open(schema_path, 'w+') { |f| f << sql }
+      add_migration('CREATE TABLE table1 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
+      add_migration('CREATE TABLE table2 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
+    end
+
+    def stub_questions
+      Thor::LineEditor.stub(:readline).and_return("n")
+    end
+
+    it "invokes validation" do
+      stub_questions
+      output = invoke!(%w{package --pretend})
+      output[:stdout].should =~ /Validation successful/
+    end
+
+    it "invokes generation" do
+      stub_questions
+      output = invoke!(%w{package --pretend})
+      output[:stdout].should =~ /Invoking generator 'cocoapods'/
+    end
+
+    it "adds the project to git" do
+      stub_questions
+      output = invoke!(%w{package --pretend})
+      output[:stdout].should =~ /git add . from "."/
+    end
+
+    it "runs git status" do
+      stub_questions
+      output = invoke!(%w{package --pretend})
+      output[:stdout].should =~ /git status from "."/
+    end
+
+    describe "diff" do
+      context "when no diff option is given" do
+        it "asks if you want to see the diff" do
+          expect(Thor::LineEditor).to receive(:readline).with("Review package diff? [y, n] ", {:limited_to=>["y", "n"]}).and_return("n")
+          stub_questions
+          output = invoke!(%w{package --pretend})
+        end
+      end
+
+      context "when --diff is specified" do
+        it "shows the diff" do
+          stub_questions
+          output = invoke!(%w{package --pretend --diff})
+          output[:stdout].should =~ /git diff --cached from "."/
+        end
+      end
+
+      context "when --no-diff is specified" do
+        it "should not ask to review the diff" do
+          expect(Thor::LineEditor).not_to receive(:readline).with("Review package diff? [y, n] ", {:limited_to=>["y", "n"]})
+          stub_questions
+          output = invoke!(%w{package --pretend --no-diff})
+        end
+      end
+    end
+
+    describe "commit" do
+      context "when no commit option is given" do
+        it "asks if you want to commit" do
+          expect(Thor::LineEditor).to receive(:readline).with("Commit package artifacts? [y, n] ", {:limited_to=>["y", "n"]}).and_return("n")
+          stub_questions
+          output = invoke!(%w{package --pretend})
+        end
+      end
+
+      context "when --commit is specified" do
+        it "commits the changes" do
+          stub_questions
+          output = invoke!(%w{package --pretend --commit})
+          output[:stdout].should =~ /git commit -m 'Packaging release/
+        end
+      end
+
+      context "when --no-commit is specified" do
+        it "commits the changes" do
+          expect(Thor::LineEditor).not_to receive(:readline).with("Commit package artifacts? [y, n] ", {:limited_to=>["y", "n"]})
+          stub_questions
+          output = invoke!(%w{package --pretend --no-commit})
+          output[:stdout].should_not =~ /git commit -m 'Packaging release/
+        end
+      end
+
+      it "tags a release for the latest version" do
+        db = MonkeyButler::Database.new(project_root + '/sandbox.sqlite')
+        migrations = MonkeyButler::Migrations.new(project_root + '/migrations', db)
+
+        stub_questions
+        output = invoke!(%w{package --pretend --commit})
+        output[:stdout].should =~ /git tag #{migrations.latest_version}/
+      end
+
+      context "when a tag for the version already exists" do
+        it "tags a point release" do
+          db = MonkeyButler::Database.new(project_root + '/sandbox.sqlite')
+          migrations = MonkeyButler::Migrations.new(project_root + '/migrations', db)
+          Dir.chdir(project_root) do
+            `echo '' > foo`
+            `git add foo && git commit -m 'fake commit' .`
+            `git tag #{migrations.latest_version}`
+          end
+          point_release = "#{migrations.latest_version}.1"
+
+          stub_questions
+          output = invoke!(%w{package --commit})
+          output[:stdout].should =~ /git tag #{point_release}/
+        end
+      end
+    end
+  end
+
+  describe '#push' do
+  end
 end

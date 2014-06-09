@@ -184,24 +184,29 @@ module MonkeyButler
     end
 
     desc "package", "Package a release by validating, generating, and tagging a version."
-    method_option :commit, type: :boolean, aliases: '-c', desc: "Commit package artifacts after build."
-    method_option :diff, type: :boolean, default: true, desc: "Show Git diff after generation"
+    method_option :diff, type: :boolean, desc: "Show Git diff after packaging"
+    method_option :commit, type: :boolean, desc: "Commit package artifacts after build."
     def package
       project = MonkeyButler::Project.load
       db = MonkeyButler::Database.new(project.db_path)
       migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
 
       validate
+      say
       generate
+      say
 
       git_add '.'
-      # git :status
-      git diff: '--cached' if options[:diff]
+      git :status
 
-      if options['commit'] || ask("Commit package artifacts?", limited_to: %w{y n}) == 'y'
-        git commit: "-m 'Packaging release #{migrations.latest_version}' ."
-        # TODO: Handle overwriting existing tag OR create unique tag by appending digits?
-        git tag: "#{migrations.latest_version}"
+      show_diff = options['diff'] != false && (options['diff'] || ask("Review package diff?", limited_to: %w{y n}) == 'y')
+      git diff: '--cached' if show_diff
+
+      commit = options['commit'] != false && (options['commit'] || ask("Commit package artifacts?", limited_to: %w{y n}) == 'y')
+      if commit
+        tag = unique_tag_for_version(migrations.latest_version)
+        git commit: "-m 'Packaging release #{tag}' ."
+        git tag: "#{tag}"
       else
         say "Package artifacts were built but not committed. Re-run `mb package` when ready to complete build."
       end
@@ -238,6 +243,21 @@ module MonkeyButler
         say "Invoking generator '#{generator_class.name}'..."
         invoke(generator_class, :push, [], options)
       end
+    end
+
+    private
+    def unique_tag_for_version(version)
+      return version if options['pretend']
+      
+      revision = nil
+      tag = nil
+      begin
+        tag = [version, revision].compact.join('.')
+        existing_tag = run "git tag -l #{tag}", capture: true
+        break if existing_tag == ""
+        revision = revision.to_i + 1
+      end while true
+      tag
     end
   end
 end
