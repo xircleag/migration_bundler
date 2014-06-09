@@ -35,7 +35,7 @@ module MonkeyButler
       def push
         # Build
         Dir.chdir("project") do
-          `gradle -Pusername=admin -Ppassword=admin123 clean build jar publish`
+          `gradle -Pusername=admin -Ppassword=admin123 clean bumpVersion build jar publish`
         end        
       end
     end
