@@ -38,9 +38,7 @@ module MonkeyButler
 
       def push
         invoke :validate
-        Dir.chdir("project") do
-          run "gradle -Pversion=#{migrations.latest_version} -Purl=#{java_url} -Pusername=#{java_username} -Ppassword=#{java_password} publish"
-        end
+        run "cd project && gradle -Pversion=#{migrations.latest_version} -Purl=#{java_url} -Pusername=#{java_username} -Ppassword=#{java_password} publish"
       end
 
       private

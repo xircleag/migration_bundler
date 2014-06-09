@@ -36,11 +36,11 @@ describe MonkeyButler::Generators::JavaGenerator do
     end
 
     it "should have project/build/libs/monkeybutler-[version].jar files" do
-      expect(File.file?(jar_path)).to eq(true)
+      expect(File.file?(built_jar_path)).to eq(true)
     end
 
     it "should have a schema packaged in the JAR" do
-      jar_schema = `jar tf #{jar_path} | grep -e schema/.*[.]sql`.strip
+      jar_schema = `jar tf #{built_jar_path} | grep -e schema/.*[.]sql`.strip
       expect(jar_schema).to eq("schema/schema.sql")
     end
 
@@ -55,7 +55,7 @@ describe MonkeyButler::Generators::JavaGenerator do
       end
       
       # Create a array of all migrations packaged in the JAR
-      jar_migrations = `jar tf #{jar_path} | grep -e migrations/.*[.]sql`
+      jar_migrations = `jar tf #{built_jar_path} | grep -e migrations/.*[.]sql`
       jar_migration_array = jar_migrations.split(/\r?\n/)
 
       # Verify that the expected and actual have the same size
@@ -69,6 +69,21 @@ describe MonkeyButler::Generators::JavaGenerator do
       }
     end
   end
+
+  describe '#push' do
+    before(:each) do
+      puts "Working in directory: #{project_root}\n"
+      set_config
+      invoke!(['generate'])
+      invoke!(['push'])
+    end
+
+    it "should have monkeybutler-[version].jar file in the local Maven" do
+      expect(File.file?(maven_jar_path)).to eq(true)
+    end
+  end
+
+  private
 
   def remove_java_repo_from_config
     yaml_path = File.join(project_root, '.monkey_butler.yml')
@@ -95,13 +110,17 @@ describe MonkeyButler::Generators::JavaGenerator do
     remove_java_repo_from_config
     remove_java_username_from_config
     remove_java_password_from_config
-    expect(Thor::LineEditor).to receive(:readline).with("What is the URL of your Java Maven repo?  ", {}).and_return("maven")
+    expect(Thor::LineEditor).to receive(:readline).with("What is the URL of your Java Maven repo?  ", {}).and_return(File.join(project_root, "maven"))
     expect(Thor::LineEditor).to receive(:readline).with("What is the username for your Java Maven repo?  ", {}).and_return("none")
     expect(Thor::LineEditor).to receive(:readline).with("What is the password for your Java Maven repo?  ", {}).and_return("none")
     invoke!(['init'])
   end
 
-  def jar_path
+  def maven_jar_path
+    return File.join(project_root, "maven/com/layer/monkeybutler/201405233443021/monkeybutler-201405233443021.jar")
+  end
+
+  def built_jar_path
     return File.join(project_root, "project/build/libs/monkeybutler-201405233443021.jar")
   end
 
