@@ -8,8 +8,9 @@ module MonkeyButler
     class Dump < Base
       class_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
 
-      def validate_database_path
+      def validate_database
         fail Error, "Cannot dump database: no file at path '#{database_path}'." unless File.exists?(database_path)
+        fail Error, "Cannot dump database: the database at path '#{database_path}' does not have a `schema_migrations` table." unless database.migrations_table?      
         say "Dumping schema from database '#{database_path}'"
       end
 
