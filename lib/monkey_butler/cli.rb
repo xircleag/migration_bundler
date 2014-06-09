@@ -185,6 +185,7 @@ module MonkeyButler
 
     desc "package", "Package a release by validating, generating, and tagging a version."
     method_option :commit, type: :boolean, aliases: '-c', desc: "Commit package artifacts after build."
+    method_option :diff, type: :boolean, default: true, desc: "Show Git diff after generation"
     def package
       project = MonkeyButler::Project.load
       db = MonkeyButler::Database.new(project.db_path)
@@ -194,10 +195,12 @@ module MonkeyButler
       generate
 
       git_add '.'
-      git :status
+      # git :status
+      git diff: '--cached' if options[:diff]
 
       if options['commit'] || ask("Commit package artifacts?", limited_to: %w{y n}) == 'y'
         git commit: "-m 'Packaging release #{migrations.latest_version}' ."
+        # TODO: Handle overwriting existing tag OR create unique tag by appending digits?
         git tag: "#{migrations.latest_version}"
       else
         say "Package artifacts were built but not committed. Re-run `mb package` when ready to complete build."
@@ -208,22 +211,32 @@ module MonkeyButler
     method_option :force, type: :boolean, aliases: '-f', desc: "Force the Git push."
     def push
       project = MonkeyButler::Project.load
-      db = MonkeyButler::Database.new(db_path)
+      db = MonkeyButler::Database.new(project.db_path)
       migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
 
       # Verify that the tag exists
-      tag = git "tag -l #{migrations.latest_version}"
-      if tag.blank?
+      git tag: "-l #{migrations.latest_version}"
+      unless $?.exitstatus.zero?
         fail Error, "Could not find tag #{migrations.latest_version}. Did you forget to run `mb package`?"
       end
-      push_options = options['force'] ? "--force" : ""
-      git "push #{push_options}"
+      push_options = %w{--tags}
+      push_options << '--force' if options['force']
+      branch_name = run "git symbolic-ref --short HEAD", capture: true, verbose: false
+      run "git config branch.`git symbolic-ref --short HEAD`.merge", verbose: false
+      unless $?.exitstatus.zero?
+        say_status :git, "no merge branch detected: setting upstream during push", :yellow
+        push_options << "--set-upstream origin #{branch_name}"
+      end
+      git push: push_options.join(' ')
+      unless $?.exitstatus.zero?
+        fail Error, "git push failed."
+      end
 
       # Give the generators a chance to push
       generator_names = options[:generators] || project.generators
       MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
         say "Invoking generator '#{generator_class.name}'..."
-        invoke(generator_class, "push")
+        invoke(generator_class, :push, [], options)
       end
     end
   end
