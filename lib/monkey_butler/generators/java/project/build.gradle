@@ -2,7 +2,19 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
-apply from: project.file("version.gradle")
+/**
+ * Specify:
+ *   -Pversion=[VERSION]
+ *   -Purl=[MAVEN URL TO PUBLISH TO] e.g. "http://nexus.dev.layer.com:8081/nexus/content/repositories/releases" or "${System.env.HOME}/.m2/repository"
+ *   -Pusername=[USERNAME FOR MAVEN PUBLISH]
+ *   -Ppassword=[PASSWORD FOR MAVEN PUBLISH]
+ */
+
+ext {
+    mavenUrl = rootProject.hasProperty("url") ? rootProject.property("url") : "${System.env.HOME}/.m2/repository"
+    mavenUsername = rootProject.hasProperty("username") ? rootProject.property("username") : null;
+    mavenPassword = rootProject.hasProperty("password") ? rootProject.property("password") : null;
+}
 
 compileJava {
     sourceCompatibility = 1.6
@@ -10,32 +22,7 @@ compileJava {
 }
 
 repositories {
-    maven { url "${System.env.HOME}/.m2/repository" }
-    maven { url "http://nexus.dev.layer.com:8081/nexus/content/groups/public" }
     mavenCentral()
-}
-
-dependencies {
-    testCompile 'junit:junit:4.11'
-    testCompile 'org.easytesting:fest-assert:1.4'
-}
-
-task Jar(type: Jar) {
-    jar.archiveName = "monkeybutler-" + version + ".jar"
-}
-
-task bumpVersion() {
-    doFirst {
-        ext.versionFile = file("version.gradle")
-        ext.line = versionFile.text
-        ext.version = ext.line.split("'").getAt(1);
-        ext.numbers = ext.version.split("\\.");
-        ext.patchVersion = ext.numbers.getAt(2);
-        ext.newPatchVersion = String.valueOf(Integer.parseInt(ext.patchVersion) + 1)
-        ext.numbers[2] = ext.newPatchVersion
-        ext.newVersion = Arrays.asList(ext.numbers).join(".")
-        ext.versionFile.text = "version = '" + newVersion + "'\n"
-    }
 }
 
 /*************************************************
@@ -76,12 +63,10 @@ publishing {
     repositories {
         maven {
             credentials {
-                username = rootProject.hasProperty("username") ? rootProject.property("username") :
-                        null;
-                password = rootProject.hasProperty("password") ? rootProject.property("password") :
-                        null;
+                username = mavenUsername;
+                password = mavenPassword;
             }
-            url "http://nexus.dev.layer.com:8081/nexus/content/repositories/releases"
+            url = mavenUrl;
         }
     }
 }
