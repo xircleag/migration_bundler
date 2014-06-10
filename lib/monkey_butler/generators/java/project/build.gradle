@@ -1,0 +1,78 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+/**
+ * Specify:
+ *   -Pversion=[VERSION]
+ *   -Purl=[MAVEN URL TO PUBLISH TO] e.g. "http://nexus.dev.layer.com:8081/nexus/content/repositories/releases" or "${System.env.HOME}/.m2/repository"
+ *   -Pusername=[USERNAME FOR MAVEN PUBLISH]
+ *   -Ppassword=[PASSWORD FOR MAVEN PUBLISH]
+ */
+
+ext {
+    mavenUrl = rootProject.hasProperty("url") ? rootProject.property("url") : "${System.env.HOME}/.m2/repository"
+    mavenUsername = rootProject.hasProperty("username") ? rootProject.property("username") : null;
+    mavenPassword = rootProject.hasProperty("password") ? rootProject.property("password") : null;
+}
+
+compileJava {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+}
+
+repositories {
+    mavenCentral()
+}
+
+/*************************************************
+ * Uploading
+ ************************************************/
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+task testJar(type: Jar) {
+    from sourceSets.test.output
+}
+
+task testSourceJar(type: Jar) {
+    from sourceSets.test.allJava
+}
+
+task Jar(type: Jar) {
+    jar.archiveName = "monkeybutler-" + version + ".jar"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId "com.layer"
+            artifactId "monkeybutler"
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+
+            artifact testJar {
+                classifier "test"
+            }
+
+            artifact testSourceJar {
+                classifier "testsources"
+            }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username = mavenUsername;
+                password = mavenPassword;
+            }
+            url = mavenUrl;
+        }
+    }
+}
+
+
