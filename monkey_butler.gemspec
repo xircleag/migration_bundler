@@ -28,4 +28,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "guard-rspec", "~> 4.2.9"
   s.add_development_dependency "simplecov", "~> 0.8.2"
   s.add_development_dependency "debugger", "~> 1.6.6"
+  s.add_development_dependency "cocoapods", "~> 0.33.1"
 end

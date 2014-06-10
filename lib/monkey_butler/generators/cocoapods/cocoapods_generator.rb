@@ -23,7 +23,7 @@ module MonkeyButler
 
       def push
         invoke :validate
-        run "pod repo push --allow-warnings #{cocoapods_repo} #{podspec_name}"
+        run "pod repo push #{options['quiet'] && '--silent '}--allow-warnings #{cocoapods_repo} #{podspec_name}"
       end
 
       private

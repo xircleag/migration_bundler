@@ -38,7 +38,7 @@ module MonkeyButler
     end
 
     def git_url
-      @git_url ||= `git config remote.origin.url`.chomp
+      `git config remote.origin.url`.chomp
     end
 
     def git_latest_tag
