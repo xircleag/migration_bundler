@@ -50,17 +50,10 @@ module MonkeyButler
       def java_username
         project.config['java.maven.username']
       end
-
+      
       def java_password
         project.config['java.maven.password']
       end
-
-#      def push
-#        # Build
-#        Dir.chdir("project") do
-#          `gradle -Pusername=admin -Ppassword=admin123 clean publish`
-#        end        
-#      end
     end
   end
 end
