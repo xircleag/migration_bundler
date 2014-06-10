@@ -26,8 +26,8 @@ module MonkeyButler
         copy_file "project/build.gradle", "project/build.gradle"
         FileUtils.cp_r project.schema_path, "project/src/main/resources/schema/schema.sql"
         FileUtils.cp_r project.migrations_path, "project/src/main/resources"
-        
-        run "cd project && gradle -Pversion=#{migrations.latest_version} clean jar"
+
+        run "cd project && gradle#{options['quiet'] && ' -q '} -Pversion=#{migrations.latest_version} clean jar"
       end
 
       def validate
@@ -38,7 +38,7 @@ module MonkeyButler
 
       def push
         invoke :validate
-        run "cd project && gradle -Pversion=#{migrations.latest_version} -Purl=#{java_url} -Pusername=#{java_username} -Ppassword=#{java_password} publish"
+        run "cd project && gradle#{options['quiet'] && ' -q '}-Pversion=#{migrations.latest_version} -Purl=#{java_url} -Pusername=#{java_username} -Ppassword=#{java_password} publish"
       end
 
       private
@@ -50,7 +50,7 @@ module MonkeyButler
       def java_username
         project.config['java.maven.username']
       end
-      
+
       def java_password
         project.config['java.maven.password']
       end

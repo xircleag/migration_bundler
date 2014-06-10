@@ -8,16 +8,36 @@ describe MonkeyButler::Generators::JavaGenerator do
 
   describe "#init" do
     it "asks for Maven Java repository URL and credentials" do
-      puts "Working in directory: #{project_root}\n"
-      set_config
+      remove_java_repo_from_config
+      remove_java_username_from_config
+      remove_java_password_from_config
+      expect(Thor::LineEditor).to receive(:readline).with("What is the URL of your Java Maven repo?  ", {}).and_return(File.join(project_root, "maven"))
+      expect(Thor::LineEditor).to receive(:readline).with("What is the username for your Java Maven repo?  ", {}).and_return("none")
+      expect(Thor::LineEditor).to receive(:readline).with("What is the password for your Java Maven repo?  ", {}).and_return("none")
+      invoke!(['init'])
     end
   end
 
   describe '#generate' do
-    before(:each) do
-      puts "Working in directory: #{project_root}\n"
-      set_config
-      invoke!(['generate'])
+    before(:all) do
+      # Put config into the YAML
+      yaml_path = File.join(project_root, '.monkey_butler.yml')
+      project = YAML.load(File.read(yaml_path))
+      project['config']['java.maven.url'] = 'maven'
+      project['config']['java.maven.username'] = 'none'
+      project['config']['java.maven.password'] = 'none'
+      File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
+
+      invoke!(['generate', '--quiet'])
+    end
+
+    # Shadow the let! declarations so we can use before(:all)
+    def thor_class
+      MonkeyButler::Generators::JavaGenerator
+    end
+
+    def project_root
+      @project_root ||= clone_temp_sandbox
     end
 
     it "should have project/build.gradle" do
@@ -53,7 +73,7 @@ describe MonkeyButler::Generators::JavaGenerator do
         end
         expected_migrations[entry] = true
       end
-      
+
       # Create a array of all migrations packaged in the JAR
       jar_migrations = `jar tf #{built_jar_path} | grep -e migrations/.*[.]sql`
       jar_migration_array = jar_migrations.split(/\r?\n/)
@@ -72,10 +92,9 @@ describe MonkeyButler::Generators::JavaGenerator do
 
   describe '#push' do
     before(:each) do
-      puts "Working in directory: #{project_root}\n"
       set_config
-      invoke!(['generate'])
-      invoke!(['push'])
+      invoke!(%w{generate --quiet})
+      invoke!(%w{push --quiet})
     end
 
     it "should have monkeybutler-[version].jar file in the local Maven" do
@@ -117,11 +136,11 @@ describe MonkeyButler::Generators::JavaGenerator do
   end
 
   def maven_jar_path
-    return File.join(project_root, "maven/com/layer/monkeybutler/201405233443021/monkeybutler-201405233443021.jar")
+    File.join(project_root, "maven/com/layer/monkeybutler/201405233443021/monkeybutler-201405233443021.jar")
   end
 
   def built_jar_path
-    return File.join(project_root, "project/build/libs/monkeybutler-201405233443021.jar")
+    File.join(project_root, "project/build/libs/monkeybutler-201405233443021.jar")
   end
 
 end
