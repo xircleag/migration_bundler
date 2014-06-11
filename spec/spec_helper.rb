@@ -6,8 +6,7 @@ require 'monkey_butler'
 require 'rspec/core/shared_context'
 require 'tempfile'
 require 'digest'
-require 'debugger'
-Debugger.start
+require 'byebug'
 
 module GlobalContext
   extend RSpec::Core::SharedContext
