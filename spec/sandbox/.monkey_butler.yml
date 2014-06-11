@@ -1,5 +1,5 @@
 name: sandbox
-generators:
+targets:
   - cocoapods
 config:
    cocoapods.repo: example_specs_repo

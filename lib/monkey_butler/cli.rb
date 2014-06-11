@@ -5,7 +5,7 @@ require 'monkey_butler/database'
 require 'monkey_butler/migrations'
 require 'monkey_butler/commands/init'
 require 'monkey_butler/commands/dump'
-require 'monkey_butler/generators/base'
+require 'monkey_butler/targets/base'
 
 module MonkeyButler
   class CLI < Thor
@@ -159,12 +159,12 @@ module MonkeyButler
       migrate
       say
 
-      say "Validating generators..."
-      generator_names = options[:generators] || project.generators
-      MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
+      say "Validating targets..."
+      target_names = options['targets'] || project.targets
+      MonkeyButler::Util.target_classes_named(target_names) do |target_class|
         with_padding do
-          say_status :validate, generator_class.name
-          invoke_with_padding(generator_class, :validate, [], options)
+          say_status :validate, target_class.name
+          invoke_with_padding(target_class, :validate, [], options)
         end
       end
       say
@@ -173,13 +173,13 @@ module MonkeyButler
     end
 
     desc "generate", "Generate platform specific migration implementations"
-    method_option :generators, type: :array, aliases: '-g', desc: "Run a specific set of generators."
+    method_option :targets, type: :array, aliases: '-t', desc: "Generate only the specified targets."
     def generate
       project = MonkeyButler::Project.load
-      generator_names = options[:generators] || project.generators
-      MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
-        say "Invoking generator '#{generator_class.name}'..."
-        invoke(generator_class, :generate, [], options)
+      target_names = options['targets'] || project.targets
+      MonkeyButler::Util.target_classes_named(target_names) do |target_class|
+        say "Invoking target '#{target_class.name}'..."
+        invoke(target_class, :generate, [], options)
       end
     end
 
@@ -237,11 +237,11 @@ module MonkeyButler
         fail Error, "git push failed."
       end
 
-      # Give the generators a chance to push
-      generator_names = options[:generators] || project.generators
-      MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
-        say "Invoking generator '#{generator_class.name}'..."
-        invoke(generator_class, :push, [], options)
+      # Give the targets a chance to push
+      target_names = options['targets'] || project.targets
+      MonkeyButler::Util.target_classes_named(taget_names) do |target_class|
+        say "Invoking target '#{target_class.name}'..."
+        invoke(target_class, :push, [], options)
       end
     end
 

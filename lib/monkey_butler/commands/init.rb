@@ -7,7 +7,7 @@ module MonkeyButler
     class Init < Base
       argument :path, type: :string, desc: 'Location to initialize the repository into', required: true
       class_option :name, type: :string, aliases: '-n', desc: "Specify project name"
-      class_option :generators, type: :array, aliases: '-g', default: [], desc: "Specify default code generators."
+      class_option :targets, type: :array, aliases: '-g', default: [], desc: "Specify default code targets."
       class_option :bundler, type: :boolean, aliases: '-b', default: false, desc: "Use Bundler to import MonkeyButler into project."
       class_option :config, type: :hash, aliases: '-c', default: {}, desc: "Specify config variables."
       desc 'Initializes a new repository into PATH'
@@ -38,16 +38,16 @@ module MonkeyButler
         end
       end
 
-      def init_generators
-        MonkeyButler::Util.generator_classes_named(options[:generators]) do |generator_class|
-          say "Initializing generator '#{generator_class.name}'..."
-          invoke(generator_class, :init, [], options)
+      def init_targets
+        MonkeyButler::Util.target_classes_named(options[:targets]) do |target_class|
+          say "Initializing target '#{target_class.name}'..."
+          invoke(target_class, :init, [], options)
         end
         project.save!(destination_root) unless options['pretend']
         git_add '.monkey_butler.yml'
       end
 
-      # Run after generators in case they modify the Gemfile
+      # Run after targets in case they modify the Gemfile
       def run_bundler
         if options['bundler']
           git_add "Gemfile"

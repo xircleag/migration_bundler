@@ -19,7 +19,7 @@ module MonkeyButler
       end
     end
 
-    attr_accessor :name, :config, :generators
+    attr_accessor :name, :config, :adapter, :targets
 
     def initialize(options = {})
       options.each { |k,v| send("#{k}=", v) }
@@ -57,7 +57,7 @@ module MonkeyButler
     end
 
     def to_hash
-      { "name" => name, "config" => config, "generators" => generators }
+      { "name" => name, "config" => config, "adapter" => adapter, "targets" => targets }
     end
   end
 end

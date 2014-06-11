@@ -155,16 +155,16 @@ describe MonkeyButler::Commands::Init do
       end
     end
 
-    context "when --generators option is given" do
+    context "when --targets option is given" do
       context "when cocoapods is specified" do
-        it "informs the user that the generators are being initialized" do
-          output = invoke!([project_root, "--config", 'cocoapods.repo:whatever', '--pretend', '--generators', 'cocoapods'])
-          output[:stdout].should =~ /Initializing generator 'cocoapods'.../
+        it "informs the user that the targets are being initialized" do
+          output = invoke!([project_root, "--config", 'cocoapods.repo:whatever', '--pretend', '--targets', 'cocoapods'])
+          output[:stdout].should =~ /Initializing target 'cocoapods'.../
         end
 
         it "writes any changes written to the config back to the file" do
           expect(Thor::LineEditor).to receive(:readline).with("What is the name of your Cocoapods specs repo?  ", {}).and_return("layerhq")
-          invoke!([project_root, '--generators', 'cocoapods'])
+          invoke!([project_root, '--targets', 'cocoapods'])
           project = YAML.load File.read(File.join(project_root, '.monkey_butler.yml'))
           expect(project['config']['cocoapods.repo']).to eql('layerhq')
         end
@@ -172,7 +172,7 @@ describe MonkeyButler::Commands::Init do
         context "when --bundler is given" do
           it "appends CocoaPods to the Gemfile" do
             stub_bundler
-            invoke!([project_root, "--config", 'cocoapods.repo:whatever', '--bundler', '--generators', 'cocoapods'])
+            invoke!([project_root, "--config", 'cocoapods.repo:whatever', '--bundler', '--targets', 'cocoapods'])
             gemfile_content = File.read(File.join(project_root, 'Gemfile'))
             gemfile_content.should =~ /gem 'cocoapods'/
           end

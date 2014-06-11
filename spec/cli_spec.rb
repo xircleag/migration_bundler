@@ -311,20 +311,20 @@ describe MonkeyButler::CLI do
       add_migration('CREATE TABLE table2 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
     end
 
-    context "when no generator option is not given" do
-      it "invokes the default generators for the project" do
+    context "when no target option is not given" do
+      it "invokes the default targets for the project" do
         output = invoke!(%w{generate})
-        output[:stdout].should =~ /Invoking generator 'cocoapods'/
-        output[:stdout].should_not =~ /Invoking generator 'java'/
+        output[:stdout].should =~ /Invoking target 'cocoapods'/
+        output[:stdout].should_not =~ /Invoking target 'java'/
         output[:stderr].should == ""
       end
     end
 
-    context "when generator option is given" do
-      it "invokes the specified generators" do
-        output = invoke!(%w{generate -g java})
-        output[:stdout].should =~ /Invoking generator 'java'/
-        output[:stdout].should_not =~ /Invoking generator 'cocoapods'/
+    context "when target option is given" do
+      it "invokes the specified targets" do
+        output = invoke!(%w{generate -t maven})
+        output[:stdout].should =~ /Invoking target 'maven'/
+        output[:stdout].should_not =~ /Invoking target 'cocoapods'/
       end
     end
   end
@@ -353,7 +353,7 @@ describe MonkeyButler::CLI do
     it "invokes generation" do
       stub_questions
       output = invoke!(%w{package --pretend})
-      output[:stdout].should =~ /Invoking generator 'cocoapods'/
+      output[:stdout].should =~ /Invoking target 'cocoapods'/
     end
 
     it "adds the project to git" do

@@ -37,10 +37,10 @@ module MonkeyButler
         string
       end
 
-      def generator_classes_named(names)
+      def target_classes_named(names)
         names.map do |name|
-          require "monkey_butler/generators/#{name}/#{name}_generator"
-          klass_name = "MonkeyButler::Generators::#{Util.camelize(name)}Generator"
+          require "monkey_butler/targets/#{name}/#{name}_target"
+          klass_name = "MonkeyButler::Targets::#{Util.camelize(name)}Target"
           Object.const_get(klass_name).tap do |klass|
             yield klass if block_given?
           end
