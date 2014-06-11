@@ -28,18 +28,6 @@ repositories {
 /*************************************************
  * Uploading
  ************************************************/
-task sourceJar(type: Jar) {
-    from sourceSets.main.allJava
-}
-
-task testJar(type: Jar) {
-    from sourceSets.test.output
-}
-
-task testSourceJar(type: Jar) {
-    from sourceSets.test.allJava
-}
-
 task Jar(type: Jar) {
     jar.archiveName = "monkeybutler-" + version + ".jar"
 }
@@ -50,18 +38,6 @@ publishing {
             groupId "com.layer"
             artifactId "monkeybutler"
             from components.java
-
-            artifact sourceJar {
-                classifier "sources"
-            }
-
-            artifact testJar {
-                classifier "test"
-            }
-
-            artifact testSourceJar {
-                classifier "testsources"
-            }
         }
     }
     repositories {

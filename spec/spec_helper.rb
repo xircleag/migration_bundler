@@ -57,9 +57,13 @@ RSpec.configure do |config|
   end
 
   def clone_temp_sandbox
-    path = Dir.mktmpdir
-    FileUtils.cp_r Dir.glob(destination_root + '/.'), path
-    path
+    Dir.mktmpdir.tap do |path|
+      FileUtils.cp_r Dir.glob(destination_root + '/.'), path
+      Dir.chdir(path) do
+        system("git init -q .")
+        system("git remote add origin git@github.com:layerhq/monkey_butler_sandbox.git")
+      end
+    end
   end
 
   def random_migration_name
