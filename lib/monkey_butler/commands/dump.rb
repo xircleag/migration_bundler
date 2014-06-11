@@ -55,7 +55,7 @@ module MonkeyButler
         with_padding do
           File.open(project.schema_path, 'a') do |f|
             database.all_versions.each do |version|
-              f.puts "INSERT INTO schema_migrations(version) VALUES (#{version});"
+              f.puts "INSERT INTO schema_migrations(version) VALUES (#{version});\n"
               say "wrote version: #{version}", :green
             end
           end
@@ -96,7 +96,7 @@ module MonkeyButler
             database.db.execute(sql) do |row|
               name, sql = row
               next if name =~ /^sqlite/
-              f << "#{sql};\n"
+              f << "#{sql};\n\n"
               yield name if block_given?
             end
             f.puts
