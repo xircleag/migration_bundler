@@ -21,9 +21,13 @@ module MonkeyButler
       end
     end
 
-    def truncate_path(path)
-      say_status :truncate, path, :yellow
-      File.truncate(path, 0)
+    def truncate_database
+      say_status :truncate, database.to_s, :yellow
+      database.truncate
+    end
+
+    def bundle
+      inside(destination_root) { run "bundle" }
     end
   end
 end

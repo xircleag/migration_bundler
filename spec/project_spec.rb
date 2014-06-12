@@ -8,6 +8,29 @@ describe MonkeyButler::Project do
     Dir.chdir(project_root)
   end
 
+  describe "#database" do
+    context "when given a URL without a scheme" do
+      it "assumes SQLite" do
+        project = MonkeyButler::Project.new(database_url: 'sandbox.sqlite')
+        project.database.should == 'sqlite'
+      end
+    end
+
+    context "given a SQLite URL" do
+      it "returns sqlite" do
+        project = MonkeyButler::Project.new(database_url: 'sqlite:///sandbox.sqlite')
+        project.database.should == 'sqlite'
+      end
+    end
+
+    context "given a Cassandra URL" do
+      it "returns cassandra" do
+        project = MonkeyButler::Project.new(database_url: 'cassandra://localhost:9170')
+        project.database.should == 'cassandra'
+      end
+    end
+  end
+
   describe '#git_url' do
   end
 

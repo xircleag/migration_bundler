@@ -56,9 +56,13 @@ RSpec.configure do |config|
   end
 
   def clone_temp_sandbox
-    path = Dir.mktmpdir
-    FileUtils.cp_r Dir.glob(destination_root + '/.'), path
-    path
+    Dir.mktmpdir.tap do |path|
+      FileUtils.cp_r Dir.glob(destination_root + '/.'), path
+      Dir.chdir(path) do
+        `git init -q .`
+        `git remote add origin git@github.com:layerhq/monkey_butler_sandbox.git`
+      end
+    end
   end
 
   def random_migration_name
@@ -76,6 +80,23 @@ RSpec.configure do |config|
         output = capture_output(proc { thor_class.start(args) })
       else
         thor_class.start(args)
+      end
+    end
+  end
+
+  def invoke_target!(command, options = {})
+    output = nil
+    # Some commands work with a directory that doesn't yet exist
+    dir = File.exists?(project_root) ? project_root : '.'
+    Dir.chdir(dir) do
+      if options.delete(:capture)
+        output = capture_output proc do
+          target = thor_class.new([], options)
+          target.invoke(command)
+        end
+      else
+        target = thor_class.new([], options)
+        target.invoke(command)
       end
     end
   end

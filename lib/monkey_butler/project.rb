@@ -1,3 +1,6 @@
+require 'yaml'
+require 'uri'
+
 module MonkeyButler
   class Project
     class << self
@@ -19,14 +22,18 @@ module MonkeyButler
       end
     end
 
-    attr_accessor :name, :config, :adapter, :targets
+    attr_accessor :name, :config, :database_url, :targets
 
     def initialize(options = {})
       options.each { |k,v| send("#{k}=", v) }
     end
 
-    def db_path
-      "#{name}.sqlite"
+    def database_url=(database_url)
+      @database_url = database_url ? URI(database_url) : nil
+    end
+
+    def database
+      database_url.scheme || 'sqlite'
     end
 
     def schema_path
@@ -51,13 +58,30 @@ module MonkeyButler
       tag.empty? ? nil : tag
     end
 
+    def git_user_email
+      `git config user.email`.chomp
+    end
+
+    def git_user_name
+      `git config user.name`.chomp
+    end
+
     def save!(path)
+      puts "Saving to #{path}"
       project_path = File.join(path, '.monkey_butler.yml')
       File.open(project_path, 'w') { |f| f << YAML.dump(self.to_hash) }
     end
 
+    def database_class
+      MonkeyButler::Util.database_named(database)
+    end
+
+    def database_target_class
+      MonkeyButler::Util.target_classes_named(database)[0]
+    end
+
     def to_hash
-      { "name" => name, "config" => config, "adapter" => adapter, "targets" => targets }
+      { "name" => name, "config" => config, "database_url" => database_url.to_s, "targets" => targets }
     end
   end
 end

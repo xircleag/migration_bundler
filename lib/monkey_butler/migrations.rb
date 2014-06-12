@@ -5,7 +5,7 @@ module MonkeyButler
     def initialize(path, database)
       @path = path
       @database = database
-      migration_paths = Dir.glob(File.join(path, '*.sql'))
+      migration_paths = Dir.glob(File.join(path, "*#{database.class.migration_ext}"))
       @paths_by_version = MonkeyButler::Util.migrations_by_version(migration_paths)
     end
 
