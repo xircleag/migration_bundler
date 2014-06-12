@@ -46,6 +46,18 @@ module MonkeyButler
           end
         end
       end
+
+      def unique_tag_for_version(version)
+        revision = nil
+        tag = nil
+        begin
+          tag = [version, revision].compact.join('.')
+          existing_tag = `git tag -l #{tag}`
+          break if existing_tag == ""
+          revision = revision.to_i + 1
+        end while true
+        tag
+      end
     end
   end
 end

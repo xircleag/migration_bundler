@@ -25,5 +25,10 @@ module MonkeyButler
       say_status :truncate, path, :yellow
       File.truncate(path, 0)
     end
+
+    def unique_tag_for_version(version)
+      return version if options['pretend']
+      MonkeyButler::Util.unique_tag_for_version(version)
+    end
   end
 end

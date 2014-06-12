@@ -34,6 +34,10 @@ module MonkeyButler
       def podspec_name
         "#{project.name}.podspec"
       end
+
+      def pod_version
+        unique_tag_for_version(migrations.latest_version)
+      end
     end
   end
 end

@@ -244,20 +244,5 @@ module MonkeyButler
         invoke(generator_class, :push, [], options)
       end
     end
-
-    private
-    def unique_tag_for_version(version)
-      return version if options['pretend']
-      
-      revision = nil
-      tag = nil
-      begin
-        tag = [version, revision].compact.join('.')
-        existing_tag = run "git tag -l #{tag}", capture: true
-        break if existing_tag == ""
-        revision = revision.to_i + 1
-      end while true
-      tag
-    end
   end
 end
