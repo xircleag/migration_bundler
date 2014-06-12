@@ -65,7 +65,11 @@ module MonkeyButler
       end
 
       def database
-        @database ||= project.database_class.new((options[:database] && URI(options[:database])) || project.database_url)
+        @database ||= project.database_class.new(database_url)
+      end
+
+      def database_url
+        (options[:database] && URI(options[:database])) || project.database_url
       end
 
       def migrations

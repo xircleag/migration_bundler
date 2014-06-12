@@ -11,8 +11,15 @@ module MonkeyButler
         migration_name = MonkeyButler::Util.migration_named(options['name'])
         template('create_monkey_butler_tables.sql.erb', "migrations/#{migration_name}.sql")
         git_add "migrations/#{migration_name}.sql"
-        create_file(database.path)
-        append_to_file '.gitignore', database.path
+        create_file(database_path)
+        append_to_file '.gitignore', database_path
+      end
+
+      no_commands do
+        # NOTE: Used instead of database.url to avoid creation of the database in pretend mode
+        def database_path
+          database_url.path || database_url.opaque
+        end
       end
 
       def new(name)

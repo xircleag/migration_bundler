@@ -82,7 +82,9 @@ module MonkeyButler
 
       # init_database_adapter
       empty_directory('migrations')
-      invoke(project.database_target_class, :init, [], target_options)
+      inside do
+        invoke(project.database_target_class, :init, [], target_options)
+      end
     end
 
     desc "dump", "Dump project schema from a database"
