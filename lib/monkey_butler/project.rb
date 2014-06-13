@@ -44,6 +44,10 @@ module MonkeyButler
     def git_latest_tag
       git_tag_for_version(nil)
     end
+    
+    def git_current_branch
+      `git symbolic-ref --short HEAD`.chomp
+    end
 
     def git_tag_for_version(version)
       pattern = version && "#{version}*"

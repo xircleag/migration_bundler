@@ -224,14 +224,17 @@ module MonkeyButler
       unless $?.exitstatus.zero?
         fail Error, "Could not find tag #{migrations.latest_version}. Did you forget to run `mb package`?"
       end
-      push_options = %w{--tags}
+      push_options = []
       push_options << '--force' if options['force']
-      branch_name = run "git symbolic-ref --short HEAD", capture: true, verbose: false
-      run "git config branch.`git symbolic-ref --short HEAD`.merge", verbose: false
+      branch_name = project.git_current_branch
+      run "git config branch.`git symbolic-ref --short HEAD`.merge", verbose: false      
       unless $?.exitstatus.zero?
         say_status :git, "no merge branch detected: setting upstream during push", :yellow
         push_options << "--set-upstream origin #{branch_name}"
       end
+      push_options << "origin #{branch_name}"
+      push_options << "--tags"
+      
       git push: push_options.join(' ')
       unless $?.exitstatus.zero?
         fail Error, "git push failed."

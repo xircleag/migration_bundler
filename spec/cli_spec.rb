@@ -451,5 +451,9 @@ describe MonkeyButler::CLI do
   end
 
   describe '#push' do
+    it "pushes to git" do
+      output = invoke!(%w{push --pretend})
+      output[:stdout].should =~ /git push origin master --tags/
+    end
   end
 end
