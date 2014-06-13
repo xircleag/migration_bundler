@@ -18,7 +18,7 @@ module MonkeyButler
       end
 
       def validate
-        fail Error, "Invalid configuration: cocoapods.repo is not configured." if cocoapods_repo.nil?
+        fail Error, "Invalid configuration: cocoapods.repo is not configured." unless cocoapods_repo
       end
 
       def push

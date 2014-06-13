@@ -88,6 +88,16 @@ describe MonkeyButler::Generators::JavaGenerator do
         expect(expected_migrations[migration]).to eq(true)
       }
     end
+
+    it "should clear java project between `generate` invocations" do
+      # Create a random file in the project directory.
+      yaml_path = File.join(project_root, '.monkey_butler.yml')
+      project = YAML.load(File.read(yaml_path))
+      File.open(File.join(project_root, 'project/deleteme.txt'), 'w') { |f| f << YAML.dump(project) }
+      expect(File.file?(File.join(project_root, 'project/deleteme.txt'))).to eq(true)
+      invoke!(['generate', '--quiet'])
+      expect(File.file?(File.join(project_root, 'project/deleteme.txt'))).to eq(false)
+    end
   end
 
   describe '#push' do
