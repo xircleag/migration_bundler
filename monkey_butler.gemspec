@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'thor', '~> 0.19.1'
   s.add_dependency 'sqlite3', '~> 1.3.9'
+  s.add_dependency 'cql-rb', '~> 2.0.0'
 
   s.add_development_dependency "bundler", "~> 1.6"
   s.add_development_dependency "rake"
