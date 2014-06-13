@@ -166,7 +166,7 @@ from the source SQL files.
 
 The SQL migration files are named by concatenating a timestamp version with a brief textual description of the database change they introduce to the system. 
 This naming convention is of the form "${VERSION_IDENTIFIER}_${MIGRATION_DESCRIPTION_UNDERSCORED}.sql". The `VERSION_IDENTIFIER` is equal to the 
-following invocation of the `date` utility (on platforms with GNU coreutils): `date +"%Y%m%d%M%S%3N"` This date format includes the year, month, day, hour, minute, 
+following invocation of the `date` utility (on platforms with GNU coreutils): `date +"%Y%m%d%H%M%S%3N"` This date format includes the year, month, day, hour, minute, 
 second and three digits of milliseconds. This ensures that there is very little chance of overlap no matter how many developers are working on the schema, 
 while still supporting very straightforward sorting in the database.
 
