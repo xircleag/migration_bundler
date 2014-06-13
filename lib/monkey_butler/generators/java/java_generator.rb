@@ -17,6 +17,7 @@ module MonkeyButler
 
       def generate
         invoke :validate
+        remove_file "project"
         empty_directory "project"
         empty_directory "project/src"
         empty_directory "project/src/main"
@@ -31,9 +32,9 @@ module MonkeyButler
       end
 
       def validate
-        fail Error, "Invalid configuration: java.repo is not configured." if java_url.nil?
-        fail Error, "Invalid configuration: java.username is not configured." if java_username.nil?
-        fail Error, "Invalid configuration: java.password is not configured." if java_password.nil?
+        fail Error, "Invalid configuration: java.maven.url is not configured." if java_url.nil?
+        fail Error, "Invalid configuration: java.maven.username is not configured." if java_username.nil?
+        fail Error, "Invalid configuration: java.maven.password is not configured." if java_password.nil?
       end
 
       def push
