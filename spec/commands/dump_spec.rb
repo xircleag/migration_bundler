@@ -20,7 +20,7 @@ describe MonkeyButler::Commands::Dump do
         BEGIN
           DELETE FROM table2 WHERE name = OLD.name;
         END;
-        INSERT INTO schema_migrations(version) VALUES (201405233443021)
+        INSERT INTO schema_migrations(version) VALUES (20140523123443021)
       SQL
     )
   end
@@ -57,8 +57,8 @@ describe MonkeyButler::Commands::Dump do
 
   it "dumps rows from schema_migrations" do
     output = invoke!([])
-    dumped_schema.should =~ /INSERT INTO schema_migrations\(version\) VALUES \(201405233443021\);\n/
-    output[:stdout].should =~ /wrote version: 201405233443021/
+    dumped_schema.should =~ /INSERT INTO schema_migrations\(version\) VALUES \(20140523123443021\);\n/
+    output[:stdout].should =~ /wrote version: 20140523123443021/
   end
 
   it "informs the user of completion" do

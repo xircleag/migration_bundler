@@ -41,7 +41,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
     end
 
     it "has version" do
-      expect(podspec.version).to eq('201405233443021')
+      expect(podspec.version).to eq('20140523123443021')
     end
 
     it "has summary" do
@@ -57,7 +57,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
     end
 
     it "has source" do
-      expect(podspec.source).to eq({:git=>"git@github.com:layerhq/monkey_butler_sandbox.git", :tag=>"201405233443021"})
+      expect(podspec.source).to eq({:git=>"git@github.com:layerhq/monkey_butler_sandbox.git", :tag=>"20140523123443021"})
     end
 
     it "has license" do
@@ -135,7 +135,7 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
           `git remote set-url origin file://#{git_repo_path}`
           `git add .`
           `git commit --no-status -m 'Adding files' .`
-          `git tag 201405233443021`
+          `git tag 20140523123443021`
           `git push -q origin master --tags`
         end
 
@@ -143,10 +143,10 @@ describe MonkeyButler::Generators::CocoapodsGenerator do
           output = invoke!(%w{push --quiet})
 
           Dir.chdir(repo_path) do
-            pushed_podspec_path = File.join(repo_path, 'example_specs_repo', 'sandbox', '201405233443021', 'sandbox.podspec')
+            pushed_podspec_path = File.join(repo_path, 'example_specs_repo', 'sandbox', '20140523123443021', 'sandbox.podspec')
             File.exists?(pushed_podspec_path).should be_true
             content = File.read(pushed_podspec_path)
-            content.should =~ /201405233443021/
+            content.should =~ /20140523123443021/
             content.should =~ /resource_bundles/
           end
         end

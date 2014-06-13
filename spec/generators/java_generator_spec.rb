@@ -136,11 +136,11 @@ describe MonkeyButler::Generators::JavaGenerator do
   end
 
   def maven_jar_path
-    File.join(project_root, "maven/com/layer/monkeybutler/201405233443021/monkeybutler-201405233443021.jar")
+    File.join(project_root, "maven/com/layer/monkeybutler/20140523123443021/monkeybutler-20140523123443021.jar")
   end
 
   def built_jar_path
-    File.join(project_root, "project/build/libs/monkeybutler-201405233443021.jar")
+    File.join(project_root, "project/build/libs/monkeybutler-20140523123443021.jar")
   end
 
 end

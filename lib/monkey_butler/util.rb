@@ -2,7 +2,7 @@ module MonkeyButler
   class Util
     class << self
       def migration_timestamp
-        Time.now.strftime('%Y%m%d%M%S%3N').to_i
+        Time.now.strftime('%Y%m%d%H%M%S%3N').to_i
       end
 
       def migration_named(name, timestamp = migration_timestamp)
@@ -14,7 +14,7 @@ module MonkeyButler
       end
 
       def migration_version_from_path(path)
-        path.match(/(\d{15})_/)[1].to_i
+        path.match(/(\d{17})_/)[1].to_i
       end
 
       def migration_versions_from_paths(paths)
