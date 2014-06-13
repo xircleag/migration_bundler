@@ -32,9 +32,9 @@ module MonkeyButler
       end
 
       def validate
-        fail Error, "Invalid configuration: java.maven.url is not configured." if java_url.nil?
-        fail Error, "Invalid configuration: java.maven.username is not configured." if java_username.nil?
-        fail Error, "Invalid configuration: java.maven.password is not configured." if java_password.nil?
+        fail Error, "Invalid configuration: java.maven.url is not configured." unless java_url
+        fail Error, "Invalid configuration: java.maven.username is not configured." unless java_username
+        fail Error, "Invalid configuration: java.maven.password is not configured." unless java_password
       end
 
       def push
