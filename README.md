@@ -1,6 +1,6 @@
 # Monkey Butler
-
 [![Gem Version](https://badge.fury.io/rb/monkey_butler.svg)](http://badge.fury.io/rb/monkey_butler)
+
 ![Monkey Butler](logo.jpg)
 
 Monkey Butler is a database schema management system written in Ruby. It currently supports SQLite and Cassandra database 
