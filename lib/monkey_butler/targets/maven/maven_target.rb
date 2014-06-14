@@ -39,7 +39,7 @@ module MonkeyButler
 
       def push
         invoke :validate
-        run "cd project && gradle#{options['quiet'] && ' -q '}-Pversion=#{migrations.latest_version} -Purl=#{maven_url} -Pusername=#{maven_username} -Ppassword=#{maven_password} publish"
+        run "cd project && gradle#{options['quiet'] && ' -q'} -Pversion=#{migrations.latest_version} -Purl=#{maven_url} -Pusername=#{maven_username} -Ppassword=#{maven_password} publish"
       end
 
       private
