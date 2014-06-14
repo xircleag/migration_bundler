@@ -22,7 +22,10 @@ module MonkeyButler
         say "Dumping schema from database '#{database_url}'"
 
         say "Dumping keyspace '#{database.keyspace}'..."
-        run "cqlsh -e 'describe keyspace #{keyspace};' #{database_url.host} > #{project.schema_path}"
+        keyspaces = project.config['cassandra.keyspaces'] || []
+        keyspaces << keyspace
+        describe_statements = keyspaces.map { |keyspace| "describe keyspace #{keyspace}" }
+        run "cqlsh -e '#{describe_statements.join(';')}' #{database_url.host} > #{project.schema_path}"
 
         say "Dumping rows from 'schema_migrations'..."
         with_padding do

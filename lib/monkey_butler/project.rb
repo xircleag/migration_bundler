@@ -71,7 +71,6 @@ module MonkeyButler
     end
 
     def save!(path)
-      puts "Saving to #{path}"
       project_path = File.join(path, '.monkey_butler.yml')
       File.open(project_path, 'w') { |f| f << YAML.dump(self.to_hash) }
     end
