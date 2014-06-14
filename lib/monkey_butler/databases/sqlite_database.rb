@@ -24,6 +24,10 @@ module MonkeyButler
         def migration_ext
           ".sql"
         end
+
+        def exception_class
+          SQLite3::Exception
+        end
       end
 
       def initialize(url)

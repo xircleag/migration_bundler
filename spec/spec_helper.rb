@@ -47,17 +47,17 @@ RSpec.configure do |config|
     { stdout: content, stderr: error }
   end
 
-  def source_root
-    File.join(File.dirname(__FILE__), "fixtures")
+  # def source_root
+  #   File.join(File.dirname(__FILE__), "fixtures")
+  # end
+
+  def sandbox_root
+    Pathname.new File.join(File.dirname(__FILE__), "sandbox")
   end
 
-  def destination_root
-    File.join(File.dirname(__FILE__), "sandbox")
-  end
-
-  def clone_temp_sandbox
+  def clone_temp_sandbox(database = :sqlite)
     Dir.mktmpdir.tap do |path|
-      FileUtils.cp_r Dir.glob(destination_root + '/.'), path
+      FileUtils.cp_r Dir.glob(sandbox_root + "#{database}/."), path
       Dir.chdir(path) do
         `git init -q .`
         `git remote add origin git@github.com:layerhq/monkey_butler_sandbox.git`

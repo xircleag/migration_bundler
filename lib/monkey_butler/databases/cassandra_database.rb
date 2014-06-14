@@ -6,8 +6,14 @@ module MonkeyButler
     class CassandraDatabase < AbstractDatabase
       attr_reader :client, :keyspace
 
-      def self.migration_ext
-        ".cql"
+      class << self
+        def migration_ext
+          ".cql"
+        end
+
+        def exception_class
+          Cql::CqlError
+        end
       end
 
       def initialize(url)
@@ -47,7 +53,7 @@ module MonkeyButler
       end
 
       def execute_migration(cql)
-        cql.split(';').each { |statement| db.execute(statement) }
+        cql.split(';').each { |statement| client.execute(statement) }
       end
 
       def truncate

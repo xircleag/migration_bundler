@@ -37,7 +37,7 @@ module MonkeyButler
     end
 
     def schema_path
-      "#{name}.sql"
+      "#{name}" + database_class.migration_ext
     end
 
     def migrations_path

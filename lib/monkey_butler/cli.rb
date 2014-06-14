@@ -169,7 +169,7 @@ module MonkeyButler
             begin
               database.execute_migration(File.read(path))
               database.insert_version(version)
-            rescue SQLite3::Exception => exception
+            rescue project.database_class.exception_class => exception
               fail Error, "Failed loading migration: #{exception}"
             end
           end

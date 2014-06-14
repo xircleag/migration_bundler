@@ -1,0 +1,7 @@
+name: sandbox
+database_url: cassandra://localhost:9042/sandbox
+targets:
+  - cocoapods
+config:
+   cocoapods.repo: example_specs_repo
+   maven.url: "http://maven.layer.com:1234/nexus"
