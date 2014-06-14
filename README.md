@@ -2,17 +2,18 @@
 
 ![Monkey Butler](logo.jpg)
 
-Monkey Butler is a schema management system for SQLite written in Ruby. It is designed for use in projects that maintain
-an identical schema across multiple codebases. It was built to manage the synchronization schema for the iOS and Android 
-SDK's on the [Layer](http://layer.com) platform.
+Monkey Butler is a database schema management system written in Ruby. It currently supports SQLite and Cassandra database 
+targets. It was built to solve the schema management challenges on the mobile SDK's and server side services developed for 
+the [Layer](http://layer.com) platform.
 
-Monkey Butler manages a Git repository containing a SQLite schema and an arbitrary number of migrations. The migrations are 
+Monkey Butler manages a Git repository containing a database schema and an arbitrary number of migrations. The migrations are 
 authored in SQL format and platform specific renderings of the schema and migrations are created via code generation.
-The current schema and all associated migrations can then be packaged into a release and shipped as an installable package.
+The current schema and all associated migrations can then be packaged into a release and shipped as a versioned, installable package.
 
 ## Features
 
-* Manages a Git repository containing a SQLite schema and migrations
+* Manages a Git repository containing a database schema and migrations
+* Supports SQLite and Cassandra schemas
 * Generates platform specific database management and migration utilities
 * Ensures that the current schema and all migrations are valid SQLite
 * Packages schema and associated migrations into versioned releases
@@ -23,7 +24,6 @@ The current schema and all associated migrations can then be packaged into a rel
 Monkey Butler requires a modern Ruby runtime (v1.9.x and up) and the following supporting cast:
 
 * [thor](http://whatisthor.com/) - Toolkit for building powerful commandline utilities
-* [rugged](https://github.com/libgit2/rugged) - Ruby bindings for libgit2
 
 ## Usage
 
@@ -37,6 +37,10 @@ Creates a new Monkey Butler schema repository at the path specified. Please refe
 the repository structure.
 
 `$ mb init [path/to/project]`
+
+The default database target is SQLite, but you can specify an alternate database by using the `database` switch:
+
+`$ mb init --database=cassandra://localhost:9042/keyspace`
 
 ### Loading the Schema
 
@@ -194,6 +198,14 @@ The implementation of the generated migration class in Objective-C may look like
 ```
 
 Platform specific migrations can also be generated.
+
+## Companion Projects
+
+Monkey Butler itself only generates installable packages containing the schema and migrations. To utilize these schemas in an application you'll
+need support code. The following companion projects are available for this use:
+
+* [FMDBMigrationManager](https://github.com/layerhq/FMDBMigrationManager) - An Objective-C SQLite migration manager implementation for use with the [FMDB])(https://github.com/ccgus/fmdb) library.
+* [SQLiteMigrationManager](https://github.com/layerhq/SQLiteMigrationManager) - A Java SQLite migration manager implementation for the Android [SQLiteDatabase](http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html) interface.
 
 ## Credits
 
