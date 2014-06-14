@@ -53,7 +53,7 @@ module MonkeyButler
       end
 
       def execute_migration(cql)
-        cql.split(';').each { |statement| client.execute(statement) }
+        cql.split(';').each { |statement| client.execute(statement) unless statement.strip.empty? }
       end
 
       def truncate
