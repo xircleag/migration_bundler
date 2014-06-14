@@ -57,7 +57,7 @@ module MonkeyButler
         with_padding do
           File.open(project.schema_path, 'a') do |f|
             database.all_versions.each do |version|
-              f.puts "INSERT INTO schema_migrations(version) VALUES (#{version});\n"
+              f.puts "INSERT INTO schema_migrations(version) VALUES (#{version});\n\n"
               say "wrote version: #{version}", :green
             end
           end
