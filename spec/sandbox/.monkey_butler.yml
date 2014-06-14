@@ -1,6 +1,0 @@
-name: sandbox
-generators:
-  - cocoapods
-config:
-   cocoapods.repo: example_specs_repo
-   java.maven.url: "http://maven.layer.com:1234/nexus"

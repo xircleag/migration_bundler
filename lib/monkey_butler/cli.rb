@@ -1,11 +1,11 @@
 require 'thor'
 require "open3"
 require 'monkey_butler/project'
-require 'monkey_butler/database'
+require 'monkey_butler/actions'
+require 'monkey_butler/databases/abstract_database'
 require 'monkey_butler/migrations'
-require 'monkey_butler/commands/init'
-require 'monkey_butler/commands/dump'
-require 'monkey_butler/generators/base'
+require 'monkey_butler/util'
+require 'monkey_butler/targets/base'
 
 module MonkeyButler
   class CLI < Thor
@@ -19,57 +19,107 @@ module MonkeyButler
       File.dirname(__FILE__)
     end
 
-    register(MonkeyButler::Commands::Init, "init", "init PATH", "Initialize a Monkey Butler project at PATH")
-    register(MonkeyButler::Commands::Dump, "dump", "dump", "Dump project schema from a database")
+    # TODO: Basically what I want to do is pass self to database target to let it register commands
 
-    # Workaround bug in Thor option registration
-    tasks["init"].options = MonkeyButler::Commands::Init.class_options
-    tasks["dump"].options = MonkeyButler::Commands::Dump.class_options
+    attr_reader :project
+
+    desc 'init [PATH]', 'Initializes a new repository into PATH'
+    method_option :name, type: :string, aliases: '-n', desc: "Specify project name"
+    method_option :database, type: :string, aliases: '-d', desc: "Specify database path or URL."
+    method_option :targets, type: :array, aliases: '-g', default: [], desc: "Specify default code targets."
+    method_option :bundler, type: :boolean, aliases: '-b', default: false, desc: "Use Bundler to import MonkeyButler into project."
+    method_option :config, type: :hash, aliases: '-c', default: {}, desc: "Specify config variables."
+    def init(path)
+      if File.exists?(path)
+        raise Error, "Cannot create repository: regular file exists at path '#{path}'" unless File.directory?(path)
+        raise Error, "Cannot create repository into non-empty path '#{path}'" if File.directory?(path) && Dir.entries(path) != %w{. ..}
+      end
+      self.destination_root = File.expand_path(path)
+      empty_directory('.')
+      inside(destination_root) { git init: '-q' }
+
+      # hydrate the project
+      project_name = options['name'] || File.basename(path)
+      sanitized_options = options.reject { |k,v| %w{bundler pretend database}.include?(k) }
+      sanitized_options[:name] = project_name
+      sanitized_options[:database_url] = options[:database] || "sqlite:#{project_name}.sqlite"
+      @project = MonkeyButler::Project.set(sanitized_options)
+
+      # generate_gitignore
+      template('templates/gitignore.erb', ".gitignore")
+      git_add '.gitignore'
+
+      # generate_config
+      create_file '.monkey_butler.yml', YAML.dump(sanitized_options)
+      git_add '.monkey_butler.yml'
+
+      # generate_gemfile
+      if options['bundler']
+        template('templates/Gemfile.erb', "Gemfile")
+      end
+
+      # init_targets
+      project = MonkeyButler::Project.set(sanitized_options)
+      target_options = options.merge('name' => project_name)
+      MonkeyButler::Util.target_classes_named(options[:targets]) do |target_class|
+        say "Initializing target '#{target_class.name}'..."
+        invoke(target_class, :init, [], target_options)
+      end
+      project.save!(destination_root) unless options['pretend']
+      git_add '.monkey_butler.yml'
+
+      # Run after targets in case they modify the Gemfile
+      # run_bundler
+      if options['bundler']
+        git_add "Gemfile"
+        bundle
+        git_add "Gemfile.lock"
+      end
+
+      # touch_database
+      create_file(project.schema_path)
+      git_add project.schema_path
+
+      # init_database_adapter
+      empty_directory('migrations')
+      inside do
+        invoke(project.database_target_class, :init, [], target_options)
+      end
+    end
+
+    desc "dump", "Dump project schema from a database"
+    def dump
+      @project = MonkeyButler::Project.load
+      invoke(project.database_target_class, :dump, [], options)
+    end
 
     desc "load", "Load project schema into a database"
-    method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     def load
-      project = MonkeyButler::Project.load
-      unless File.size?(project.schema_path)
-        raise Error, "Cannot load database: empty schema found at #{project.schema_path}. Maybe you need to `mb migrate`?"
-      end
-
-      db_path = options[:database] || project.db_path
-      if File.size?(db_path)
-        File.truncate(db_path, 0)
-        say_status :truncate, db_path, :yellow
-      end
-      command = "sqlite3 #{db_path} < #{project.schema_path}"
-      say_status :executing, command
-      stdout_str, stderr_str, status = Open3.capture3(command)
-      fail Error, "Failed loading schema: #{stderr_str}" unless stderr_str.empty?
-
-      db = MonkeyButler::Database.new(db_path)
-      say "Loaded schema at version #{db.current_version}"
+      @project = MonkeyButler::Project.load
+      invoke(project.database_target_class, :load, [], options)
     end
 
     desc "new NAME", "Create a new migration"
     def new(name)
-      migration_name = MonkeyButler::Util.migration_named(name)
+      @project = MonkeyButler::Project.load
       empty_directory('migrations')
-      template('templates/migration.sql.erb', "migrations/#{migration_name}")
-      git_add "migrations/#{migration_name}"
+      invoke(project.database_target_class, :new, [name], options)
     end
 
     desc "status", "Display current schema version and any pending migrations"
+    method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     def status
       project = MonkeyButler::Project.load
-      db = MonkeyButler::Database.new(project.db_path)
-      migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
+      migrations = MonkeyButler::Migrations.new(project.migrations_path, database)
 
-      if db.migrations_table?
+      if database.migrations_table?
         say "Current version: #{migrations.current_version}"
         pending_count = migrations.pending.size
         version = (pending_count == 1) ? "version" : "versions"
-        say "The database at '#{project.db_path}' is #{pending_count} #{version} behind #{migrations.latest_version}" unless migrations.up_to_date?
+        say "The database at '#{database}' is #{pending_count} #{version} behind #{migrations.latest_version}" unless migrations.up_to_date?
       else
         say "New database"
-        say "The database at '#{project.db_path}' does not have a 'schema_migrations' table."
+        say "The database at '#{database}' does not have a 'schema_migrations' table."
       end
 
       if migrations.up_to_date?
@@ -96,9 +146,6 @@ module MonkeyButler
     method_option :dump, type: :boolean, aliases: '-D', desc: "Dump schema after migrate"
     def migrate(version = nil)
       project = MonkeyButler::Project.load
-      db_path = options[:database] || project.db_path
-      db = MonkeyButler::Database.new(db_path)
-      migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
 
       if migrations.up_to_date?
         say "Database is up to date."
@@ -106,8 +153,8 @@ module MonkeyButler
       end
 
       target_version = version || migrations.latest_version
-      if db.migrations_table?
-        say "Migrating from #{db.current_version} to #{target_version}"
+      if database.migrations_table?
+        say "Migrating from #{database.current_version} to #{target_version}"
       else
         say "Migrating new database to #{target_version}"
       end
@@ -120,9 +167,9 @@ module MonkeyButler
           migrations.pending do |version, path|
             say "applying migration: #{path}", :green
             begin
-              db.execute_migration(File.read(path))
-              db.insert_version(version)
-            rescue SQLite3::Exception => exception
+              database.execute_migration(File.read(path))
+              database.insert_version(version)
+            rescue project.database_class.exception_class => exception
               fail Error, "Failed loading migration: #{exception}"
             end
           end
@@ -149,22 +196,24 @@ module MonkeyButler
       end
       say
 
+      invoke(project.database_target_class, :validate, [], options)
+
       say "Validating schema loads..."
-      truncate_path(project.db_path)
+      truncate_database
       load
       say
 
       say "Validating migrations apply..."
-      truncate_path(project.db_path)
+      truncate_database
       migrate
       say
 
-      say "Validating generators..."
-      generator_names = options[:generators] || project.generators
-      MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
+      say "Validating targets..."
+      target_names = options['targets'] || project.targets
+      MonkeyButler::Util.target_classes_named(target_names) do |target_class|
         with_padding do
-          say_status :validate, generator_class.name
-          invoke_with_padding(generator_class, :validate, [], options)
+          say_status :validate, target_class.name
+          invoke_with_padding(target_class, :validate, [], options)
         end
       end
       say
@@ -173,13 +222,14 @@ module MonkeyButler
     end
 
     desc "generate", "Generate platform specific migration implementations"
-    method_option :generators, type: :array, aliases: '-g', desc: "Run a specific set of generators."
+    method_option :targets, type: :array, aliases: '-t', desc: "Generate only the specified targets."
     def generate
       project = MonkeyButler::Project.load
-      generator_names = options[:generators] || project.generators
-      MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
-        say "Invoking generator '#{generator_class.name}'..."
-        invoke(generator_class, :generate, [], options)
+      invoke(project.database_target_class, :generate, [], options)
+      target_names = options['targets'] || project.targets
+      MonkeyButler::Util.target_classes_named(target_names) do |target_class|
+        say "Invoking target '#{target_class.name}'..."
+        invoke(target_class, :generate, [], options)
       end
     end
 
@@ -187,10 +237,6 @@ module MonkeyButler
     method_option :diff, type: :boolean, desc: "Show Git diff after packaging"
     method_option :commit, type: :boolean, desc: "Commit package artifacts after build."
     def package
-      project = MonkeyButler::Project.load
-      db = MonkeyButler::Database.new(project.db_path)
-      migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
-
       validate
       say
       generate
@@ -214,11 +260,8 @@ module MonkeyButler
 
     desc "push", "Push a release to Git, CocoaPods, Maven, etc."
     method_option :force, type: :boolean, aliases: '-f', desc: "Force the Git push."
+    # TODO: Use args instead of options for the targets!
     def push
-      project = MonkeyButler::Project.load
-      db = MonkeyButler::Database.new(project.db_path)
-      migrations = MonkeyButler::Migrations.new(project.migrations_path, db)
-
       # Verify that the tag exists
       git tag: "-l #{migrations.latest_version}"
       unless $?.exitstatus.zero?
@@ -240,12 +283,53 @@ module MonkeyButler
         fail Error, "git push failed."
       end
 
-      # Give the generators a chance to push
-      generator_names = options[:generators] || project.generators
-      MonkeyButler::Util.generator_classes_named(generator_names) do |generator_class|
-        say "Invoking generator '#{generator_class.name}'..."
-        invoke(generator_class, :push, [], options)
+      # Give the targets a chance to push
+      target_names = options['targets'] || project.targets
+      MonkeyButler::Util.target_classes_named(target_names) do |target_class|
+        say "Invoking target '#{target_class.name}'..."
+        invoke(target_class, :push, [], options)
       end
+    end
+
+    # Hook into the command execution for dynamic task configuration
+    def self.start(given_args = ARGV, config = {})
+      if File.exists?(Dir.pwd + '/.monkey_butler.yml')
+        project = MonkeyButler::Project.load
+        project.database_target_class.register_with_cli(self)
+      end
+      super
+    end
+
+    private
+    def unique_tag_for_version(version)
+      return version if options['pretend']
+      
+      revision = nil
+      tag = nil
+      begin
+        tag = [version, revision].compact.join('.')
+        existing_tag = run "git tag -l #{tag}", capture: true
+        break if existing_tag == ""
+        revision = revision.to_i + 1
+      end while true
+      tag
+    end
+
+    private
+    def bundle
+      inside(destination_root) { run "bundle" }
+    end
+
+    def project
+      @project ||= MonkeyButler::Project.load
+    end
+
+    def database
+      @database ||= project.database_class.new((options[:database] && URI(options[:database])) || project.database_url)
+    end
+
+    def migrations
+      @migrations ||= MonkeyButler::Migrations.new(project.migrations_path, database)
     end
   end
 end

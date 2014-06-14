@@ -1,8 +1,41 @@
 require 'spec_helper'
+require 'monkey_butler/databases/sqlite_database'
 
-describe MonkeyButler::Database do
+describe MonkeyButler::Databases::SqliteDatabase do
+  it "has a SQL file extension" do
+    MonkeyButler::Databases::SqliteDatabase.migration_ext.should == '.sql'
+  end
+
+  it "initializes with a URL" do
+    path = Dir.mktmpdir + '/sandbox.sqlite'
+    database = MonkeyButler::Databases::SqliteDatabase.new(URI("sqlite://#{path}"))
+    database.path.should == path
+  end
+
+  it "stores url" do
+    url = URI("sqlite://#{Dir.mktmpdir}/sandbox.sqlite")
+    database = MonkeyButler::Databases::SqliteDatabase.new(url)
+    database.url.should == url
+  end
+
+  it "uses path for to_s" do
+    url = URI("sqlite://#{Dir.mktmpdir}/sandbox.sqlite")
+    database = MonkeyButler::Databases::SqliteDatabase.new(url)
+    database.to_s.should == url.path
+  end
+
+  context "when initialized with a relative path" do
+    it "loads the relative path" do
+      path = Dir.mktmpdir
+      Dir.chdir(path) do
+        database = MonkeyButler::Databases::SqliteDatabase.new(URI("sqlite:test.sqlite"))
+        database.path.should == 'test.sqlite'
+      end
+    end
+  end
+
   let(:db_path) { Tempfile.new('monkey_butler').path }
-  let(:db) { MonkeyButler::Database.create(db_path) }
+  let(:db) { MonkeyButler::Databases::SqliteDatabase.create(URI(db_path)) }
 
   describe '#origin_version' do
     context "when the schema_migrations table is empty" do
@@ -75,7 +108,7 @@ describe MonkeyButler::Database do
   describe '#all_versions' do
     context "when the database is empty" do
       it "raises a SQL exception" do
-        db = MonkeyButler::Database.new(db_path)
+        db = MonkeyButler::Databases::SqliteDatabase.new(URI(db_path))
         expect { db.all_versions }.to raise_error(SQLite3::SQLException)
       end
     end
@@ -144,4 +177,5 @@ describe MonkeyButler::Database do
       end
     end
   end
+
 end

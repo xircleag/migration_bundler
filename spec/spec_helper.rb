@@ -6,8 +6,7 @@ require 'monkey_butler'
 require 'rspec/core/shared_context'
 require 'tempfile'
 require 'digest'
-require 'debugger'
-Debugger.start
+require 'byebug'
 
 module GlobalContext
   extend RSpec::Core::SharedContext
@@ -48,17 +47,17 @@ RSpec.configure do |config|
     { stdout: content, stderr: error }
   end
 
-  def source_root
-    File.join(File.dirname(__FILE__), "fixtures")
+  # def source_root
+  #   File.join(File.dirname(__FILE__), "fixtures")
+  # end
+
+  def sandbox_root
+    Pathname.new File.join(File.dirname(__FILE__), "sandbox")
   end
 
-  def destination_root
-    File.join(File.dirname(__FILE__), "sandbox")
-  end
-
-  def clone_temp_sandbox
+  def clone_temp_sandbox(database = :sqlite)
     Dir.mktmpdir.tap do |path|
-      FileUtils.cp_r Dir.glob(destination_root + '/.'), path
+      FileUtils.cp_r Dir.glob(sandbox_root + "#{database}/."), path
       Dir.chdir(path) do
         system("git init -q .")
         system("git remote add origin git@github.com:layerhq/monkey_butler_sandbox.git")
@@ -81,6 +80,23 @@ RSpec.configure do |config|
         output = capture_output(proc { thor_class.start(args) })
       else
         thor_class.start(args)
+      end
+    end
+  end
+
+  def invoke_target!(command, options = {})
+    output = nil
+    # Some commands work with a directory that doesn't yet exist
+    dir = File.exists?(project_root) ? project_root : '.'
+    Dir.chdir(dir) do
+      if options.delete(:capture)
+        output = capture_output proc do
+          target = thor_class.new([], options)
+          target.invoke(command)
+        end
+      else
+        target = thor_class.new([], options)
+        target.invoke(command)
       end
     end
   end

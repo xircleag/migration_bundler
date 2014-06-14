@@ -6,7 +6,7 @@ module MonkeyButler
       end
 
       def migration_named(name, timestamp = migration_timestamp)
-        migration_name = [timestamp, 'create', Thor::Util.snake_case(name) + '.sql'].join('_')
+        migration_name = [timestamp, 'create', Thor::Util.snake_case(name)].join('_')
       end
 
       def strip_leading_whitespace(string)
@@ -37,10 +37,18 @@ module MonkeyButler
         string
       end
 
-      def generator_classes_named(names)
-        names.map do |name|
-          require "monkey_butler/generators/#{name}/#{name}_generator"
-          klass_name = "MonkeyButler::Generators::#{Util.camelize(name)}Generator"
+      def database_named(name)
+        raise ArgumentError, "Database name cannot be nil." if name.nil?
+        require "monkey_butler/databases/#{name}_database"
+        klass_name = "MonkeyButler::Databases::#{Util.camelize(name)}Database"
+        Object.const_get(klass_name)
+      end
+
+      def target_classes_named(*names)
+        raise ArgumentError, "Database name cannot be nil." if names.nil?
+        names.flatten.map do |name|
+          require "monkey_butler/targets/#{name}/#{name}_target"
+          klass_name = "MonkeyButler::Targets::#{Util.camelize(name)}Target"
           Object.const_get(klass_name).tap do |klass|
             yield klass if block_given?
           end

@@ -1,16 +1,16 @@
 require 'spec_helper'
-require 'monkey_butler/generators/base'
-require 'monkey_butler/generators/java/java_generator'
+require 'monkey_butler/targets/base'
+require 'monkey_butler/targets/maven/maven_target'
 
-describe MonkeyButler::Generators::JavaGenerator do
-  let(:thor_class) { MonkeyButler::Generators::JavaGenerator }
+describe MonkeyButler::Targets::MavenTarget do
+  let(:thor_class) { MonkeyButler::Targets::MavenTarget }
   let!(:project_root) { clone_temp_sandbox }
 
   describe "#init" do
     it "asks for Maven Java repository URL and credentials" do
-      remove_java_repo_from_config
-      remove_java_username_from_config
-      remove_java_password_from_config
+      remove_maven_repo_from_config
+      remove_maven_username_from_config
+      remove_maven_password_from_config
       expect(Thor::LineEditor).to receive(:readline).with("What is the URL of your Java Maven repo?  ", {}).and_return(File.join(project_root, "maven"))
       expect(Thor::LineEditor).to receive(:readline).with("What is the username for your Java Maven repo?  ", {}).and_return("none")
       expect(Thor::LineEditor).to receive(:readline).with("What is the password for your Java Maven repo?  ", {}).and_return("none")
@@ -23,9 +23,9 @@ describe MonkeyButler::Generators::JavaGenerator do
       # Put config into the YAML
       yaml_path = File.join(project_root, '.monkey_butler.yml')
       project = YAML.load(File.read(yaml_path))
-      project['config']['java.maven.url'] = 'maven'
-      project['config']['java.maven.username'] = 'none'
-      project['config']['java.maven.password'] = 'none'
+      project['config']['maven.url'] = 'maven'
+      project['config']['maven.username'] = 'none'
+      project['config']['maven.password'] = 'none'
       File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
 
       invoke!(['generate', '--quiet'])
@@ -33,7 +33,7 @@ describe MonkeyButler::Generators::JavaGenerator do
 
     # Shadow the let! declarations so we can use before(:all)
     def thor_class
-      MonkeyButler::Generators::JavaGenerator
+      MonkeyButler::Targets::MavenTarget
     end
 
     def project_root
@@ -114,31 +114,31 @@ describe MonkeyButler::Generators::JavaGenerator do
 
   private
 
-  def remove_java_repo_from_config
+  def remove_maven_repo_from_config
     yaml_path = File.join(project_root, '.monkey_butler.yml')
     project = YAML.load(File.read(yaml_path))
-    project['config'].delete 'java.maven.url'
+    project['config'].delete 'maven.url'
     File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
   end
 
-  def remove_java_username_from_config
+  def remove_maven_username_from_config
     yaml_path = File.join(project_root, '.monkey_butler.yml')
     project = YAML.load(File.read(yaml_path))
-    project['config'].delete 'java.maven.username'
+    project['config'].delete 'maven.username'
     File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
   end
 
-  def remove_java_password_from_config
+  def remove_maven_password_from_config
     yaml_path = File.join(project_root, '.monkey_butler.yml')
     project = YAML.load(File.read(yaml_path))
-    project['config'].delete 'java.maven.password'
+    project['config'].delete 'maven.password'
     File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
   end
 
   def set_config
-    remove_java_repo_from_config
-    remove_java_username_from_config
-    remove_java_password_from_config
+    remove_maven_repo_from_config
+    remove_maven_username_from_config
+    remove_maven_password_from_config
     expect(Thor::LineEditor).to receive(:readline).with("What is the URL of your Java Maven repo?  ", {}).and_return(File.join(project_root, "maven"))
     expect(Thor::LineEditor).to receive(:readline).with("What is the username for your Java Maven repo?  ", {}).and_return("none")
     expect(Thor::LineEditor).to receive(:readline).with("What is the password for your Java Maven repo?  ", {}).and_return("none")

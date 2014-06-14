@@ -21,12 +21,13 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'thor', '~> 0.19.1'
   s.add_dependency 'sqlite3', '~> 1.3.9'
+  s.add_dependency 'cql-rb', '~> 2.0.0'
 
   s.add_development_dependency "bundler", "~> 1.6"
   s.add_development_dependency "rake"
   s.add_development_dependency "rspec", "~> 2.14.1"
   s.add_development_dependency "guard-rspec", "~> 4.2.9"
   s.add_development_dependency "simplecov", "~> 0.8.2"
-  s.add_development_dependency "debugger", "~> 1.6.6"
+  s.add_development_dependency "byebug", "~> 3.1.2"
   s.add_development_dependency "cocoapods", "~> 0.33.1"
 end

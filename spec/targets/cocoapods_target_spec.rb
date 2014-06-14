@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'monkey_butler/generators/cocoapods/cocoapods_generator'
+require 'monkey_butler/targets/cocoapods/cocoapods_target'
 
 module Pod
   class Spec
@@ -11,8 +11,8 @@ module Pod
   end
 end
 
-describe MonkeyButler::Generators::CocoapodsGenerator do
-  let(:thor_class) { MonkeyButler::Generators::CocoapodsGenerator }
+describe MonkeyButler::Targets::CocoapodsTarget do
+  let(:thor_class) { MonkeyButler::Targets::CocoapodsTarget }
   let!(:project_root) { clone_temp_sandbox }
 
   before(:each) do
