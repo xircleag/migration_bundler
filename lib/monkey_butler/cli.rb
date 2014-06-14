@@ -19,8 +19,6 @@ module MonkeyButler
       File.dirname(__FILE__)
     end
 
-    # TODO: Basically what I want to do is pass self to database target to let it register commands
-
     attr_reader :project
 
     desc 'init [PATH]', 'Initializes a new repository into PATH'
@@ -270,14 +268,14 @@ module MonkeyButler
       push_options = []
       push_options << '--force' if options['force']
       branch_name = project.git_current_branch
-      run "git config branch.`git symbolic-ref --short HEAD`.merge", verbose: false      
+      run "git config branch.`git symbolic-ref --short HEAD`.merge", verbose: false
       unless $?.exitstatus.zero?
         say_status :git, "no merge branch detected: setting upstream during push", :yellow
         push_options << "--set-upstream origin #{branch_name}"
       end
       push_options << "origin #{branch_name}"
       push_options << "--tags"
-      
+
       git push: push_options.join(' ')
       unless $?.exitstatus.zero?
         fail Error, "git push failed."
@@ -303,7 +301,7 @@ module MonkeyButler
     private
     def unique_tag_for_version(version)
       return version if options['pretend']
-      
+
       revision = nil
       tag = nil
       begin
