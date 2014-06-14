@@ -1,3 +1,5 @@
+require 'monkey_butler/databases/cassandra_database'
+
 module MonkeyButler
   module Targets
     class CassandraTarget < Base

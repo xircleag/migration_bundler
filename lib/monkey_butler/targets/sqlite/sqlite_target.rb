@@ -1,3 +1,5 @@
+require 'monkey_butler/databases/sqlite_database'
+
 module MonkeyButler
   module Targets
     class SqliteTarget < Base
