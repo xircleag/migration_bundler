@@ -1,3 +1,8 @@
+## v1.2.0
+
+* Introduced `mb drop` for dropping a database.
+* Introduced `mb config` for working with config variables.
+
 ## v1.1.1
 
 * Include the names of all keyspaces being dumped during a multi-keyspace dump.
