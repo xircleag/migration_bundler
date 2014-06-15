@@ -263,8 +263,6 @@ module MonkeyButler
     end
 
     desc "push", "Push a release to Git, CocoaPods, Maven, etc."
-    method_option :force, type: :boolean, aliases: '-f', desc: "Force the Git push."
-    # TODO: Use args instead of options for the targets!
     def push
       # Verify that the tag exists
       git tag: "-l #{migrations.latest_version}"
@@ -292,6 +290,23 @@ module MonkeyButler
       MonkeyButler::Util.target_classes_named(target_names) do |target_class|
         say "Invoking target '#{target_class.name}'..."
         invoke(target_class, :push, [], options)
+      end
+    end
+    
+    desc "config", "Get and set configuration options."
+    def config(key = nil, value = nil)
+      if key && value
+        project.config[key] = value
+        project.save!(Dir.pwd)
+      elsif key
+        value = project.config[key]
+        if value
+          say "#{key}=#{value}"
+        else
+          say "No value for key '#{key}'"
+        end
+      else
+        project.config.each { |key, value| say "#{key}=#{value}" }
       end
     end
 

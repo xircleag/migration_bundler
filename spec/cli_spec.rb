@@ -654,6 +654,38 @@ describe MonkeyButler::CLI do
       output[:stdout].should =~ /git push origin master --tags/
     end
   end
+  
+  describe "#config" do
+    before(:each) do
+      project = MonkeyButler::Project.load(project_root)
+      project.config['this'] = 'that'
+      project.config['option'] = 'value'
+    end
+    
+    context "when called with no arguments" do
+      it "enumerates all config variables" do        
+        output = invoke!(%w{config})
+        output[:stdout].should =~ /this=that/
+        output[:stdout].should =~ /option=value/
+      end
+    end
+    
+    context "when called with one argument" do
+      it "reads the value for that option" do
+        output = invoke!(%w{config this})
+        output[:stdout].should =~ /this=that/
+        output[:stdout].should_not =~ /option=value/
+      end
+    end
+    
+    context "when called with two arguments" do
+      it "sets the value for the specified option" do
+        invoke!(%w{config this value})
+        yaml = YAML.load(File.read(File.join(project_root, '.monkey_butler.yml')))
+        yaml['config']['this'].should == 'value'
+      end
+    end
+  end
 end
 
 describe MonkeyButler::CLI, "#target integration" do
