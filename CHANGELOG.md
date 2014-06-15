@@ -1,3 +1,7 @@
+## v1.2.1
+
+* Fix double dumping of the default keyspace when using multiple Cassandra keyspaces.
+
 ## v1.2.0
 
 * Introduced `mb drop` for dropping a database.
