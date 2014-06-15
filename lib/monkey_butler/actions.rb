@@ -23,7 +23,7 @@ module MonkeyButler
 
     def truncate_database
       say_status :truncate, database.to_s, :yellow
-      database.truncate
+      database.drop
     end
 
     def bundle

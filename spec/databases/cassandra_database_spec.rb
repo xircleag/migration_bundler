@@ -6,7 +6,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
   let(:cassandra_url) { URI("cassandra://localhost:9042/monkey_butler") }
 
   before(:each) do
-    db.truncate
+    db.drop
   end
 
   describe ".migration_ext" do
@@ -32,7 +32,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
 
     context "when the migrations table does not exist" do
       before(:each) do
-        db.truncate
+        db.drop
       end
 
       it "is true" do
@@ -44,7 +44,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
   describe "#origin_version" do
     context "when the schema_migrations table does not exist" do
       before(:each) do
-        db.truncate
+        db.drop
       end
 
       it "raises an error" do
@@ -90,7 +90,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
   describe "#current_version" do
     context "when the schema_migrations table does not exist" do
       before(:each) do
-        db.truncate
+        db.drop
       end
 
       it "raises an error" do
@@ -136,7 +136,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
   describe "#all_versions" do
     context "when the schema_migrations table does not exist" do
       before(:each) do
-        db.truncate
+        db.drop
       end
 
       it "raises an error" do
@@ -182,7 +182,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
   describe "#insert_version" do
     context "when the schema_migrations table does not exist" do
       before(:each) do
-        db.truncate
+        db.drop
       end
 
       it "raises an error" do
@@ -205,7 +205,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
   describe "#execute_migration" do
     context "when the schema_migrations table does not exist" do
       before(:each) do
-        db.truncate
+        db.drop
       end
 
       it "raises an error" do
@@ -233,7 +233,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
 
       it "destroys the tables" do
         expect(db.migrations_table?).to be_true
-        db.truncate
+        db.drop
         expect(db.migrations_table?).to be_false
       end
     end

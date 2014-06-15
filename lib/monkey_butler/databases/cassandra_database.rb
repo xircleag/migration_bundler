@@ -56,8 +56,8 @@ module MonkeyButler
         cql.split(';').each { |statement| client.execute(statement) unless statement.strip.empty? }
       end
 
-      def truncate
-        client.execute "DROP KEYSPACE IF EXISTS #{keyspace}"
+      def drop(keyspaces = [keyspace])
+        keyspaces.each { |keyspace| client.execute "DROP KEYSPACE IF EXISTS #{keyspace}" }
       end
 
       def create_migrations_table

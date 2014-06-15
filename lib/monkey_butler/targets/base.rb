@@ -58,6 +58,11 @@ module MonkeyButler
       def load
         # Default implementation does nothing
       end
+      
+      desc "drop", "Drops all tables and records"
+      def drop
+        # Default implementation does nothing
+      end
 
       protected
       def project

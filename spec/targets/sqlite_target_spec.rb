@@ -6,7 +6,9 @@ describe MonkeyButler::Targets::SqliteTarget do
   let(:thor_class) { MonkeyButler::CLI }
   let!(:project_root) { clone_temp_sandbox }
   let(:project) { MonkeyButler::Project.load(project_root) }
-
+  let(:schema_path) { File.join(project_root, project.schema_path) }
+  let(:db_path) { File.join(project_root, 'sandbox.sqlite') }
+  
   describe "#new" do
     it "generates a new migration with the given name" do
       invoke!(%w{new add_column_to_table})
@@ -16,12 +18,9 @@ describe MonkeyButler::Targets::SqliteTarget do
   end
 
   describe '#dump' do
-    let(:schema_path) { File.join(project_root, project.schema_path) }
-    let(:db_path) { File.join(project_root, 'sandbox.sqlite') }
-
     before(:each) do
       db = MonkeyButler::Databases::SqliteDatabase.new(URI(db_path))
-      db.truncate
+      db.drop
       db.execute_migration MonkeyButler::Util.strip_leading_whitespace(
         <<-SQL
           #{MonkeyButler::Databases::SqliteDatabase.create_schema_migrations_sql}
@@ -94,7 +93,11 @@ describe MonkeyButler::Targets::SqliteTarget do
     end
   end
 
-  # desc "#load" do
-  #
-  # end
+  describe "#drop" do
+    it "truncates the database file" do
+      File.open(db_path, 'w+') { |f| f << "test" }      
+      output = invoke!(%w{drop})
+      File.size(db_path).should == 0
+    end
+  end
 end

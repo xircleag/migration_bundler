@@ -31,7 +31,7 @@ module MonkeyButler
         raise NotImplementedError, "Required method not implemented."
       end
 
-      def truncate
+      def drop
         raise NotImplementedError, "Required method not implemented."
       end
 

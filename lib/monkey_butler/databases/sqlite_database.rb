@@ -67,8 +67,8 @@ module MonkeyButler
         end
       end
 
-      def truncate
-        File.truncate(path, 0)
+      def drop
+        File.truncate(path, 0) if File.size?(path)
       end
 
       def to_s

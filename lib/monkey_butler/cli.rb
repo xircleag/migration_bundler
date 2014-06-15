@@ -96,6 +96,12 @@ module MonkeyButler
       @project = MonkeyButler::Project.load
       invoke(project.database_target_class, :load, [], options)
     end
+    
+    desc "drop", "Drop the schema currently loaded into a database"
+    def drop
+      @project = MonkeyButler::Project.load
+      invoke(project.database_target_class, :drop, [], options)
+    end
 
     desc "new NAME", "Create a new migration"
     def new(name)

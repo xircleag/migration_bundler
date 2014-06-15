@@ -9,7 +9,7 @@ describe MonkeyButler::Targets::CassandraTarget do
   let(:database) { MonkeyButler::Databases::CassandraDatabase.new(project.database_url) }
 
   before(:each) do
-    database.truncate
+    database.drop
   end
 
   describe "#init" do
@@ -73,7 +73,7 @@ describe MonkeyButler::Targets::CassandraTarget do
       @database = MonkeyButler::Databases::CassandraDatabase.new(project.database_url)
       @database.create_migrations_table
       invoke!(%w{dump})
-      @database.truncate
+      @database.drop
     end
 
     it "loads the database" do
@@ -86,7 +86,7 @@ describe MonkeyButler::Targets::CassandraTarget do
   describe "#status" do
     context "when the database is empty" do
       before(:each) do
-        database.truncate
+        database.drop
       end
 
       it "shows status" do
@@ -129,7 +129,7 @@ describe MonkeyButler::Targets::CassandraTarget do
   describe "#migrate" do
     context "when the database is empty" do
       before(:each) do
-        database.truncate
+        database.drop
       end
 
       it "shows migrate" do
@@ -164,6 +164,28 @@ describe MonkeyButler::Targets::CassandraTarget do
         output[:stdout].should =~ /applying migration: migrations\/20140523123443021_add_another_table.cql/
         output[:stdout].should =~ /Migration to version 20140523123443021 complete./
       end
+    end
+  end
+  
+  describe "#drop" do
+    before(:each) do
+      database.create_migrations_table
+      database.insert_version(123)
+      database.client.execute "CREATE KEYSPACE IF NOT EXISTS extra1 WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
+      database.client.execute "CREATE KEYSPACE IF NOT EXISTS extra2 WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
+      project.config['cassandra.keyspaces'] = %w{extra1 extra2}
+      project.save!(project_root)
+    end
+
+    it "drops all keyspaces" do
+      invoke!(%w{drop})
+      database.client.use(:system)
+      rows = database.client.execute('SELECT keyspace_name FROM schema_columnfamilies')
+      keyspaces = []
+      rows.each { |row| keyspaces << row['keyspace_name'] }
+      keyspaces.should_not include('sandbox')
+      keyspaces.should_not include('extra1')
+      keyspaces.should_not include('extra2')
     end
   end
 end
