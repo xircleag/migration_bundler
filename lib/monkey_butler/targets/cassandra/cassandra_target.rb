@@ -20,10 +20,10 @@ module MonkeyButler
         @database = MonkeyButler::Databases::CassandraDatabase.new(database_url)
         fail Error, "Cannot dump database: the database at '#{database_url}' does not have a `schema_migrations` table." unless database.migrations_table?
         say "Dumping schema from database '#{database_url}'"
-
-        say "Dumping keyspace '#{database.keyspace}'..."
+        
         keyspaces = project.config['cassandra.keyspaces'] || []
         keyspaces.unshift(keyspace)
+        say "Dumping keyspaces '#{keyspaces.join(', ')}'..."
         describe_statements = keyspaces.map { |keyspace| "describe keyspace #{keyspace};" }
         run "cqlsh -e '#{describe_statements.join(' ')}' #{database_url.host} > #{project.schema_path}"
 
