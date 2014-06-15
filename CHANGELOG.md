@@ -1,3 +1,7 @@
+## v1.1.1
+
+* Include the names of all keyspaces being dumped during a multi-keyspace dump.
+
 ## v1.1.0
 
 * Added support for dumping additional keyspaces in Cassandra. Keyspaces are specified via the `cassandra.keyspaces` config setting.
