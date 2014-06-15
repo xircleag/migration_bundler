@@ -23,9 +23,9 @@ module MonkeyButler
 
         say "Dumping keyspace '#{database.keyspace}'..."
         keyspaces = project.config['cassandra.keyspaces'] || []
-        keyspaces << keyspace
-        describe_statements = keyspaces.map { |keyspace| "describe keyspace #{keyspace}" }
-        run "cqlsh -e '#{describe_statements.join(';')}' #{database_url.host} > #{project.schema_path}"
+        keyspaces.unshift(keyspace)
+        describe_statements = keyspaces.map { |keyspace| "describe keyspace #{keyspace};" }
+        run "cqlsh -e '#{describe_statements.join(' ')}' #{database_url.host} > #{project.schema_path}"
 
         say "Dumping rows from 'schema_migrations'..."
         with_padding do
