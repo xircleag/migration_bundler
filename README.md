@@ -205,7 +205,7 @@ Platform specific migrations can also be generated.
 Monkey Butler itself only generates installable packages containing the schema and migrations. To utilize these schemas in an application you'll
 need support code. The following companion projects are available for this use:
 
-* [FMDBMigrationManager](https://github.com/layerhq/FMDBMigrationManager) - An Objective-C SQLite migration manager implementation for use with the [FMDB])(https://github.com/ccgus/fmdb) library.
+* [FMDBMigrationManager](https://github.com/layerhq/FMDBMigrationManager) - An Objective-C SQLite migration manager implementation for use with the [FMDB](https://github.com/ccgus/fmdb) library.
 * [SQLiteMigrationManager](https://github.com/layerhq/SQLiteMigrationManager) - A Java SQLite migration manager implementation for the Android [SQLiteDatabase](http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html) interface.
 
 ## Credits
