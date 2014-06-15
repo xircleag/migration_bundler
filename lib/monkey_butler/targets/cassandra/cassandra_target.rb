@@ -64,7 +64,7 @@ module MonkeyButler
       end
       
       def keyspaces
-        keyspaces = project.config['cassandra.keyspaces'] || []
+        keyspaces = project.config['cassandra.keyspaces'].dup || []
         keyspaces.unshift(keyspace)
       end
     end
