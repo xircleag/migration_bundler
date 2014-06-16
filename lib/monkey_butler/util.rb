@@ -6,7 +6,7 @@ module MonkeyButler
       end
 
       def migration_named(name, timestamp = migration_timestamp)
-        migration_name = [timestamp, 'create', Thor::Util.snake_case(name)].join('_')
+        migration_name = [timestamp, Thor::Util.snake_case(name)].join('_')
       end
 
       def strip_leading_whitespace(string)

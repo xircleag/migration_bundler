@@ -10,7 +10,7 @@ module MonkeyButler
       end
 
       def init
-        migration_name = MonkeyButler::Util.migration_named(options['name'])
+        migration_name = MonkeyButler::Util.migration_named('create_' + options['name'])
         template('create_monkey_butler_tables.sql.erb', "migrations/#{migration_name}.sql")
         git_add "migrations/#{migration_name}.sql"
         create_file(database_path)
@@ -81,7 +81,7 @@ module MonkeyButler
 
         say "Loaded schema at version #{database.current_version}"
       end
-      
+
       def drop
         say_status :truncate, database.path, :yellow
         database.drop
