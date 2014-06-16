@@ -14,7 +14,7 @@ module MonkeyButler
 
       def generate
         invoke :validate
-        template('podspec.erb', podspec_name)
+        template('podspec.erb', podspec_name, force: true)
       end
 
       def validate
