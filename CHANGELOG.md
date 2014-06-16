@@ -1,3 +1,11 @@
+## v1.2.3
+
+* Force generate CocoaPods specs by default.
+
+## v1.2.2
+
+* Fix accidental prepending of `create_` to new migraiton names.
+
 ## v1.2.1
 
 * Fix double dumping of the default keyspace when using multiple Cassandra keyspaces.
