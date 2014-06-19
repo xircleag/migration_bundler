@@ -28,7 +28,8 @@ module MonkeyButler
         FileUtils.cp_r project.schema_path, "project/src/main/resources/schema/schema.sql"
         FileUtils.cp_r project.migrations_path, "project/src/main/resources"
 
-        run "cd project && gradle#{options['quiet'] && ' -q '} -Pversion=#{migrations.latest_version} clean jar"
+        version = unique_tag_for_version(migrations.latest_version)
+        run "cd project && gradle#{options['quiet'] && ' -q '} -Pversion=#{version} clean jar"
       end
 
       def validate
