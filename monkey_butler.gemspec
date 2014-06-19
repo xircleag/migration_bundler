@@ -5,9 +5,9 @@ require 'monkey_butler/version'
 
 Gem::Specification.new do |s|
   s.name        = 'monkey_butler'
-  s.version     = '1.2.3'
-  s.date        = '2014-06-15'
-  s.summary     = "Monkey Butler is a schema management system for SQLite"
+  s.version     = '1.2.4'
+  s.date        = '2014-06-18'
+  s.summary     = "Monkey Butler is a flexible database schema management system"
   s.description = "A simple hello world gem"
   s.authors     = ["Blake Watters"]
   s.email       = 'blake@layer.com'
