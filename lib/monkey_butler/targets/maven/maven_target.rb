@@ -28,6 +28,7 @@ module MonkeyButler
         FileUtils.cp_r project.schema_path, "project/src/main/resources/schema/schema.sql"
         FileUtils.cp_r project.migrations_path, "project/src/main/resources"
 
+        version = unique_tag_for_version(migrations.latest_version)
         run "cd project && gradle#{options['quiet'] && ' -q '} -Pversion=#{version} clean jar"
       end
 
@@ -39,6 +40,7 @@ module MonkeyButler
 
       def push
         invoke :validate
+        version = project.git_latest_tag
         run "cd project && gradle#{options['quiet'] && ' -q'} -Pversion=#{version} -Purl=#{maven_url} -Pusername=#{maven_username} -Ppassword=#{maven_password} publish"
       end
 
@@ -54,10 +56,6 @@ module MonkeyButler
 
       def maven_password
         project.config['maven.password']
-      end
-
-      def version
-        unique_tag_for_version(migrations.latest_version)
       end
     end
   end
