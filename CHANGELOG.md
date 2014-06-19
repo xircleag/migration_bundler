@@ -1,3 +1,11 @@
+## v1.2.5
+
+* Fix bug in Maven push when publishing point releases.
+
+## v1.2.4
+
+* Fix bug in Maven generate when creating point releases.
+
 ## v1.2.3
 
 * Force generate CocoaPods specs by default.
