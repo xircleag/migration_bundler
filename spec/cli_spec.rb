@@ -87,12 +87,12 @@ describe MonkeyButler::CLI, "#init" do
 
         it "includes a nested config dictionary" do
           config = YAML.load(File.read(@yaml_path))
-          config['config'].should == {}
+          config['config'].should_not be_nil
         end
 
-        it "configures default adapters" do
+        it "configures default tables to dump" do
           config = YAML.load(File.read(@yaml_path))
-          config['config'].should == {}
+          config['config'].should == {"db.dump_tables"=>["schema_migrations"]}
         end
 
         context "when config option is specified" do
@@ -100,7 +100,7 @@ describe MonkeyButler::CLI, "#init" do
 
           it "parses the arguments as a hash of config vars" do
             config = YAML.load(File.read(@yaml_path))
-            config['config'].should == {"foo" => "bar"}
+            config['config'].should == {"foo" => "bar", "db.dump_tables"=>["schema_migrations"] }
           end
         end
       end
@@ -654,22 +654,22 @@ describe MonkeyButler::CLI do
       output[:stdout].should =~ /git push origin master --tags/
     end
   end
-  
+
   describe "#config" do
     before(:each) do
       project = MonkeyButler::Project.load(project_root)
       project.config['this'] = 'that'
       project.config['option'] = 'value'
     end
-    
+
     context "when called with no arguments" do
-      it "enumerates all config variables" do        
+      it "enumerates all config variables" do
         output = invoke!(%w{config})
         output[:stdout].should =~ /this=that/
         output[:stdout].should =~ /option=value/
       end
     end
-    
+
     context "when called with one argument" do
       it "reads the value for that option" do
         output = invoke!(%w{config this})
@@ -677,7 +677,7 @@ describe MonkeyButler::CLI do
         output[:stdout].should_not =~ /option=value/
       end
     end
-    
+
     context "when called with two arguments" do
       it "sets the value for the specified option" do
         invoke!(%w{config this value})

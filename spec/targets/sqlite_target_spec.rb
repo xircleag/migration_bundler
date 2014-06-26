@@ -8,7 +8,7 @@ describe MonkeyButler::Targets::SqliteTarget do
   let(:project) { MonkeyButler::Project.load(project_root) }
   let(:schema_path) { File.join(project_root, project.schema_path) }
   let(:db_path) { File.join(project_root, 'sandbox.sqlite') }
-  
+
   describe "#new" do
     it "generates a new migration with the given name" do
       invoke!(%w{new add_column_to_table})
@@ -69,8 +69,8 @@ describe MonkeyButler::Targets::SqliteTarget do
 
     it "dumps rows from schema_migrations" do
       output = invoke!(%w{dump})
-      dumped_schema.should =~ /INSERT INTO schema_migrations\(version\) VALUES \(201405233443021\);/
-      output[:stdout].should =~ /wrote version: 201405233443021/
+      dumped_schema.should =~ /INSERT INTO schema_migrations \(version\) VALUES \(201405233443021\);/
+      output[:stdout].should =~ /wrote 1 rows./
     end
 
     it "informs the user of completion" do
@@ -95,7 +95,7 @@ describe MonkeyButler::Targets::SqliteTarget do
 
   describe "#drop" do
     it "truncates the database file" do
-      File.open(db_path, 'w+') { |f| f << "test" }      
+      File.open(db_path, 'w+') { |f| f << "test" }
       output = invoke!(%w{drop})
       File.size(db_path).should == 0
     end

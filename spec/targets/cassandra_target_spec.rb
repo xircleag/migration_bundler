@@ -48,15 +48,15 @@ describe MonkeyButler::Targets::CassandraTarget do
     it "dumps the schema_migrations rows" do
       invoke!(%w{dump})
       content = File.read(File.join(project_root, project.schema_path))
-      content.should =~ /INSERT INTO schema_migrations\(partition_key, version\) VALUES \(0, 123\);/
+      content.should =~ /INSERT INTO schema_migrations \(partition_key, version\) VALUES \(0, 123\);/
     end
-    
+
     context "when there are extra keyspaces specified" do
       before(:each) do
         database.client.execute "CREATE KEYSPACE IF NOT EXISTS extra1 WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
         database.client.execute "CREATE KEYSPACE IF NOT EXISTS extra2 WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
       end
-      
+
       it "dumps the additional keyspaces" do
         project.config['cassandra.keyspaces'] = %w{extra1 extra2}
         project.save!(project_root)
@@ -166,7 +166,7 @@ describe MonkeyButler::Targets::CassandraTarget do
       end
     end
   end
-  
+
   describe "#drop" do
     before(:each) do
       database.create_migrations_table

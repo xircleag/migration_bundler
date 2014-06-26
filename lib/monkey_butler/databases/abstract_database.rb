@@ -35,6 +35,11 @@ module MonkeyButler
         raise NotImplementedError, "Required method not implemented."
       end
 
+      # Dumps the specified table into SQL
+      def dump_rows(table_name)
+        raise NotImplementedError, "Required method not implemented."
+      end
+
       attr_reader :url
 
       def initialize(url)

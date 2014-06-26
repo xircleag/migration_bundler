@@ -5,3 +5,5 @@ targets:
 config:
    cocoapods.repo: example_specs_repo
    maven.url: "http://maven.layer.com:1234/nexus"
+   db.dump_tables:
+     - schema_migrations

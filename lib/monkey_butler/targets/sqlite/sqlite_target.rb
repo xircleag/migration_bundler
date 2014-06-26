@@ -53,16 +53,17 @@ module MonkeyButler
           say
         end
 
-        say "Dumping rows from 'schema_migrations'..."
-        with_padding do
-          File.open(project.schema_path, 'a') do |f|
-            database.all_versions.each do |version|
-              f.puts "INSERT INTO schema_migrations(version) VALUES (#{version});\n\n"
-              say "wrote version: #{version}", :green
+        File.open(project.schema_path, 'a') do |f|
+          project.config['db.dump_tables'].each do |table_name|
+            say "Dumping rows from '#{table_name}'..."
+            with_padding do
+              row_statements = database.dump_rows(table_name)
+              f.puts row_statements.join("\n")
+              say "wrote #{row_statements.size} rows.", :green
             end
           end
+          say
         end
-        say
 
         say "Dump complete. Schema written to #{project.schema_path}."
       end

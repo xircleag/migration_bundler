@@ -178,4 +178,21 @@ describe MonkeyButler::Databases::SqliteDatabase do
     end
   end
 
+  describe "#dump_rows" do
+    before(:each) do
+      1.upto(5) { |version| db.insert_version(version) }
+    end
+
+    it "dumps the rows to SQL" do
+      statements = db.dump_rows('schema_migrations')
+      expected_statements = [
+        "INSERT INTO schema_migrations (version) VALUES (1);",
+        "INSERT INTO schema_migrations (version) VALUES (2);",
+        "INSERT INTO schema_migrations (version) VALUES (3);",
+        "INSERT INTO schema_migrations (version) VALUES (4);",
+        "INSERT INTO schema_migrations (version) VALUES (5);"
+      ]
+      expect(statements).to eq(expected_statements)
+    end
+  end
 end

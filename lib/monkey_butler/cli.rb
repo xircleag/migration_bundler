@@ -63,6 +63,7 @@ module MonkeyButler
         say "Initializing target '#{target_class.name}'..."
         invoke(target_class, :init, [], target_options)
       end
+      project.config['db.dump_tables'] = %w{schema_migrations}
       project.save!(destination_root) unless options['pretend']
       git_add '.monkey_butler.yml'
 
@@ -96,7 +97,7 @@ module MonkeyButler
       @project = MonkeyButler::Project.load
       invoke(project.database_target_class, :load, [], options)
     end
-    
+
     desc "drop", "Drop the schema currently loaded into a database"
     def drop
       @project = MonkeyButler::Project.load
@@ -292,7 +293,7 @@ module MonkeyButler
         invoke(target_class, :push, [], options)
       end
     end
-    
+
     desc "config", "Get and set configuration options."
     def config(key = nil, value = nil)
       if key && value

@@ -75,6 +75,17 @@ module MonkeyButler
         path
       end
 
+      def dump_rows(table_name)
+        statement = db.prepare("SELECT * FROM #{table_name}")
+        result_set = statement.execute
+        Array.new.tap do |statements|
+          result_set.each do |row|
+            values = row.map { |v| v.is_a?(String) ? SQLite3::Database.quote(v) : v }
+            statements << "INSERT INTO #{table_name} (#{result_set.columns.join(', ')}) VALUES (#{values.join(', ')});"
+          end
+        end
+      end
+
       ####
       # Outside of abstract interface...
 

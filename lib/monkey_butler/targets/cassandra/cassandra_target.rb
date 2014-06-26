@@ -25,17 +25,18 @@ module MonkeyButler
         describe_statements = keyspaces.map { |keyspace| "describe keyspace #{keyspace};" }
         run "cqlsh -e '#{describe_statements.join(' ')}' #{database_url.host} > #{project.schema_path}"
 
-        say "Dumping rows from 'schema_migrations'..."
-        with_padding do
-          File.open(project.schema_path, 'a') do |f|
-            f.puts "USE #{keyspace};"
-            database.all_versions.each do |version|
-              f.puts "INSERT INTO schema_migrations(partition_key, version) VALUES (0, #{version});"
-              say "wrote version: #{version}", :green
+        File.open(project.schema_path, 'a') do |f|
+          f.puts "USE #{keyspace};"
+          project.config['db.dump_tables'].each do |table_name|
+            say "Dumping rows from '#{table_name}'..."
+            with_padding do
+              row_statements = database.dump_rows(table_name)
+              f.puts row_statements.join("\n")
+              say "wrote #{row_statements.size} rows.", :green
             end
           end
+          say
         end
-        say
 
         say "Dump complete. Schema written to #{project.schema_path}."
       end

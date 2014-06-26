@@ -64,6 +64,25 @@ module MonkeyButler
         client.execute "CREATE KEYSPACE IF NOT EXISTS #{keyspace} WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
         client.execute "CREATE TABLE IF NOT EXISTS #{keyspace}.schema_migrations (partition_key INT, version VARINT, PRIMARY KEY (partition_key, version));"
       end
+
+      def dump_rows(table_name)
+        client.use(keyspace)
+        rows = client.execute "SELECT * FROM #{table_name}"
+        columns = Array.new.tap do |columns|
+          rows.metadata.each do |column_metadata|
+            columns << column_metadata.column_name
+          end
+        end
+        Array.new.tap do |statements|
+          rows.each do |row|
+            values = columns.map do |column|
+              value = row[column]
+              value.is_a?(String) ? "\"#{value}\"" : value
+            end
+            statements << "INSERT INTO #{table_name} (#{columns.join(', ')}) VALUES (#{values.join(', ')});"
+          end
+        end
+      end
     end
   end
 end

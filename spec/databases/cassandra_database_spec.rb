@@ -238,4 +238,23 @@ describe MonkeyButler::Databases::CassandraDatabase do
       end
     end
   end
+
+  describe "#dump_rows" do
+    before(:each) do
+      db.create_migrations_table
+      1.upto(5) { |version| db.insert_version(version) }
+    end
+
+    it "dumps the rows as statements" do
+      statements = db.dump_rows('schema_migrations')
+      expected_statements = [
+        "INSERT INTO schema_migrations (partition_key, version) VALUES (0, 1);",
+        "INSERT INTO schema_migrations (partition_key, version) VALUES (0, 2);",
+        "INSERT INTO schema_migrations (partition_key, version) VALUES (0, 3);",
+        "INSERT INTO schema_migrations (partition_key, version) VALUES (0, 4);",
+        "INSERT INTO schema_migrations (partition_key, version) VALUES (0, 5);"
+      ]
+      expect(statements).to eq(expected_statements)
+    end
+  end
 end
