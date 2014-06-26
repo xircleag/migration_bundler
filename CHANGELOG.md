@@ -1,3 +1,8 @@
+## v1.3.0
+
+* Added support for dumping arbitrary sets of tables.
+* Renamed project to Migration Bundler.
+
 ## v1.2.5
 
 * Fix bug in Maven push when publishing point releases.
