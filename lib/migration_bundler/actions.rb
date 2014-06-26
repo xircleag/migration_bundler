@@ -1,4 +1,4 @@
-module MonkeyButler
+module MigrationBundler
   module Actions
     # Run a command in git.
     #
@@ -32,7 +32,7 @@ module MonkeyButler
 
     def unique_tag_for_version(version)
       return version if options['pretend']
-      MonkeyButler::Util.unique_tag_for_version(version)
+      MigrationBundler::Util.unique_tag_for_version(version)
     end
   end
 end

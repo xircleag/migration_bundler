@@ -1,12 +1,12 @@
 require 'spec_helper'
-require 'monkey_butler/targets/cassandra/cassandra_target'
-require 'monkey_butler/databases/cassandra_database'
+require 'migration_bundler/targets/cassandra/cassandra_target'
+require 'migration_bundler/databases/cassandra_database'
 
-describe MonkeyButler::Targets::CassandraTarget do
-  let(:thor_class) { MonkeyButler::CLI }
+describe MigrationBundler::Targets::CassandraTarget do
+  let(:thor_class) { MigrationBundler::CLI }
   let!(:project_root) { clone_temp_sandbox(:cassandra) }
-  let(:project) { MonkeyButler::Project.load(project_root) }
-  let(:database) { MonkeyButler::Databases::CassandraDatabase.new(project.database_url) }
+  let(:project) { MigrationBundler::Project.load(project_root) }
+  let(:database) { MigrationBundler::Databases::CassandraDatabase.new(project.database_url) }
 
   before(:each) do
     database.drop
@@ -34,7 +34,7 @@ describe MonkeyButler::Targets::CassandraTarget do
 
   describe "#dump" do
     before(:each) do
-      database = MonkeyButler::Databases::CassandraDatabase.new(project.database_url)
+      database = MigrationBundler::Databases::CassandraDatabase.new(project.database_url)
       database.create_migrations_table
       database.insert_version(123)
     end
@@ -70,7 +70,7 @@ describe MonkeyButler::Targets::CassandraTarget do
 
   describe "#load" do
     before(:each) do
-      @database = MonkeyButler::Databases::CassandraDatabase.new(project.database_url)
+      @database = MigrationBundler::Databases::CassandraDatabase.new(project.database_url)
       @database.create_migrations_table
       invoke!(%w{dump})
       @database.drop

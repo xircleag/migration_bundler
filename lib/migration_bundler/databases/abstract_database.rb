@@ -1,4 +1,4 @@
-module MonkeyButler
+module MigrationBundler
   module Databases
     class AbstractDatabase
       class << self

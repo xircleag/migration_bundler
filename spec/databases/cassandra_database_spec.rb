@@ -1,21 +1,21 @@
 require 'spec_helper'
-require 'monkey_butler/databases/cassandra_database'
+require 'migration_bundler/databases/cassandra_database'
 
-describe MonkeyButler::Databases::CassandraDatabase do
-  let(:db) { MonkeyButler::Databases::CassandraDatabase.new(cassandra_url) }
-  let(:cassandra_url) { URI("cassandra://localhost:9042/monkey_butler") }
+describe MigrationBundler::Databases::CassandraDatabase do
+  let(:db) { MigrationBundler::Databases::CassandraDatabase.new(cassandra_url) }
+  let(:cassandra_url) { URI("cassandra://localhost:9042/migration_bundler") }
 
   before(:each) do
     db.drop
   end
 
   describe ".migration_ext" do
-    MonkeyButler::Databases::CassandraDatabase.migration_ext.should == '.cql'
+    MigrationBundler::Databases::CassandraDatabase.migration_ext.should == '.cql'
   end
 
   describe '#keyspace' do
     it "extracts keyspace from path" do
-      db.keyspace.should == 'monkey_butler'
+      db.keyspace.should == 'migration_bundler'
     end
   end
 
@@ -48,7 +48,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
       end
 
       it "raises an error" do
-        expect { db.origin_version }.to raise_error(Cql::QueryError, "Keyspace 'monkey_butler' does not exist")
+        expect { db.origin_version }.to raise_error(Cql::QueryError, "Keyspace 'migration_bundler' does not exist")
       end
     end
 
@@ -94,7 +94,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
       end
 
       it "raises an error" do
-        expect { db.current_version }.to raise_error(Cql::QueryError, "Keyspace 'monkey_butler' does not exist")
+        expect { db.current_version }.to raise_error(Cql::QueryError, "Keyspace 'migration_bundler' does not exist")
       end
     end
 
@@ -140,7 +140,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
       end
 
       it "raises an error" do
-        expect { db.current_version }.to raise_error(Cql::QueryError, "Keyspace 'monkey_butler' does not exist")
+        expect { db.current_version }.to raise_error(Cql::QueryError, "Keyspace 'migration_bundler' does not exist")
       end
     end
 
@@ -186,7 +186,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
       end
 
       it "raises an error" do
-        expect { db.insert_version(1234) }.to raise_error(Cql::QueryError, "Keyspace 'monkey_butler' does not exist")
+        expect { db.insert_version(1234) }.to raise_error(Cql::QueryError, "Keyspace 'migration_bundler' does not exist")
       end
     end
 
@@ -209,7 +209,7 @@ describe MonkeyButler::Databases::CassandraDatabase do
       end
 
       it "raises an error" do
-        expect { db.insert_version(1234) }.to raise_error(Cql::QueryError, "Keyspace 'monkey_butler' does not exist")
+        expect { db.insert_version(1234) }.to raise_error(Cql::QueryError, "Keyspace 'migration_bundler' does not exist")
       end
     end
 

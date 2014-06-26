@@ -1,11 +1,11 @@
 require 'spec_helper'
-require 'monkey_butler/targets/sqlite/sqlite_target'
-require 'monkey_butler/databases/sqlite_database'
+require 'migration_bundler/targets/sqlite/sqlite_target'
+require 'migration_bundler/databases/sqlite_database'
 
-describe MonkeyButler::Targets::SqliteTarget do
-  let(:thor_class) { MonkeyButler::CLI }
+describe MigrationBundler::Targets::SqliteTarget do
+  let(:thor_class) { MigrationBundler::CLI }
   let!(:project_root) { clone_temp_sandbox }
-  let(:project) { MonkeyButler::Project.load(project_root) }
+  let(:project) { MigrationBundler::Project.load(project_root) }
   let(:schema_path) { File.join(project_root, project.schema_path) }
   let(:db_path) { File.join(project_root, 'sandbox.sqlite') }
 
@@ -19,11 +19,11 @@ describe MonkeyButler::Targets::SqliteTarget do
 
   describe '#dump' do
     before(:each) do
-      db = MonkeyButler::Databases::SqliteDatabase.new(URI(db_path))
+      db = MigrationBundler::Databases::SqliteDatabase.new(URI(db_path))
       db.drop
-      db.execute_migration MonkeyButler::Util.strip_leading_whitespace(
+      db.execute_migration MigrationBundler::Util.strip_leading_whitespace(
         <<-SQL
-          #{MonkeyButler::Databases::SqliteDatabase.create_schema_migrations_sql}
+          #{MigrationBundler::Databases::SqliteDatabase.create_schema_migrations_sql}
           CREATE TABLE table1(version INTEGER UNIQUE NOT NULL, name STRING NOT NULL);
           CREATE TABLE table2(version INTEGER UNIQUE NOT NULL, name STRING NOT NULL);
           CREATE INDEX name1 ON table1(name);

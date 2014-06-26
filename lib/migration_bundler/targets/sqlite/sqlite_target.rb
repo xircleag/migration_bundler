@@ -1,6 +1,6 @@
-require 'monkey_butler/databases/sqlite_database'
+require 'migration_bundler/databases/sqlite_database'
 
-module MonkeyButler
+module MigrationBundler
   module Targets
     class SqliteTarget < Base
       # TODO: Need a way to do this for self elegantly...
@@ -10,8 +10,8 @@ module MonkeyButler
       end
 
       def init
-        migration_name = MonkeyButler::Util.migration_named('create_' + options['name'])
-        template('create_monkey_butler_tables.sql.erb', "migrations/#{migration_name}.sql")
+        migration_name = MigrationBundler::Util.migration_named('create_' + options['name'])
+        template('create_migration_bundler_tables.sql.erb', "migrations/#{migration_name}.sql")
         git_add "migrations/#{migration_name}.sql"
         create_file(database_path)
         append_to_file '.gitignore', database_path
@@ -26,7 +26,7 @@ module MonkeyButler
 
       def new(name)
         migration_ext = project.database_class.migration_ext
-        migration_name = MonkeyButler::Util.migration_named(name) + migration_ext
+        migration_name = MigrationBundler::Util.migration_named(name) + migration_ext
         template('migration.sql.erb', "migrations/#{migration_name}")
         git_add "migrations/#{migration_name}"
       end
@@ -36,7 +36,7 @@ module MonkeyButler
         database_path = database_url.path || database_url.opaque
         fail Error, "Cannot dump database: no file at path '#{database_path}'." unless File.exists?(database_path)
 
-        @database = MonkeyButler::Databases::SqliteDatabase.new(database_url)
+        @database = MigrationBundler::Databases::SqliteDatabase.new(database_url)
         fail Error, "Cannot dump database: the database at path '#{database_path}' does not have a `schema_migrations` table." unless database.migrations_table?
         say "Dumping schema from database '#{database_path}'"
 
@@ -69,7 +69,7 @@ module MonkeyButler
       end
 
       def load
-        project = MonkeyButler::Project.load
+        project = MigrationBundler::Project.load
         unless File.size?(project.schema_path)
           raise Error, "Cannot load database: empty schema found at #{project.schema_path}. Maybe you need to `mb migrate`?"
         end

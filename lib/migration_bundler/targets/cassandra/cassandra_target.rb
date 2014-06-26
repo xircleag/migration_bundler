@@ -1,23 +1,23 @@
-require 'monkey_butler/databases/cassandra_database'
+require 'migration_bundler/databases/cassandra_database'
 
-module MonkeyButler
+module MigrationBundler
   module Targets
     class CassandraTarget < Base
       def init
-        migration_path = "migrations/" + MonkeyButler::Util.migration_named('create_' + options[:name]) + '.cql'
+        migration_path = "migrations/" + MigrationBundler::Util.migration_named('create_' + options[:name]) + '.cql'
         template('create_schema_migrations.cql.erb', migration_path)
         git_add migration_path
       end
 
       def new(name)
-        migration_path = "migrations/" + MonkeyButler::Util.migration_named(name) + '.cql'
+        migration_path = "migrations/" + MigrationBundler::Util.migration_named(name) + '.cql'
         template('migration.cql.erb', migration_path)
         git_add migration_path
       end
 
       def dump
         database_url = (options[:database] && URI(options[:database])) || project.database_url
-        @database = MonkeyButler::Databases::CassandraDatabase.new(database_url)
+        @database = MigrationBundler::Databases::CassandraDatabase.new(database_url)
         fail Error, "Cannot dump database: the database at '#{database_url}' does not have a `schema_migrations` table." unless database.migrations_table?
         say "Dumping schema from database '#{database_url}'"
 
@@ -42,12 +42,12 @@ module MonkeyButler
       end
 
       def load
-        project = MonkeyButler::Project.load
+        project = MigrationBundler::Project.load
         unless File.size?(project.schema_path)
           raise Error, "Cannot load database: empty schema found at #{project.schema_path}. Maybe you need to `mb migrate`?"
         end
 
-        @database = MonkeyButler::Databases::CassandraDatabase.new(database_url)
+        @database = MigrationBundler::Databases::CassandraDatabase.new(database_url)
         drop
         run "cqlsh #{database_url.host} -f #{project.schema_path}"
 

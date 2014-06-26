@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'monkey_butler/targets/cocoapods/cocoapods_target'
+require 'migration_bundler/targets/cocoapods/cocoapods_target'
 
 module Pod
   class Spec
@@ -11,8 +11,8 @@ module Pod
   end
 end
 
-describe MonkeyButler::Targets::CocoapodsTarget do
-  let(:thor_class) { MonkeyButler::Targets::CocoapodsTarget }
+describe MigrationBundler::Targets::CocoapodsTarget do
+  let(:thor_class) { MigrationBundler::Targets::CocoapodsTarget }
   let!(:project_root) { clone_temp_sandbox }
 
   before(:each) do
@@ -57,7 +57,7 @@ describe MonkeyButler::Targets::CocoapodsTarget do
     end
 
     it "has source" do
-      expect(podspec.source).to eq({:git=>"git@github.com:layerhq/monkey_butler_sandbox.git", :tag=>"20140523123443021"})
+      expect(podspec.source).to eq({:git=>"git@github.com:layerhq/migration_bundler_sandbox.git", :tag=>"20140523123443021"})
     end
 
     it "has license" do
@@ -155,7 +155,7 @@ describe MonkeyButler::Targets::CocoapodsTarget do
   end
 
   def remove_cocoapods_repo_from_config
-    yaml_path = File.join(project_root, '.monkey_butler.yml')
+    yaml_path = File.join(project_root, '.migration_bundler.yml')
     project = YAML.load(File.read(yaml_path))
     project['config'].delete 'cocoapods.repo'
     File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }

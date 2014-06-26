@@ -1,9 +1,9 @@
 require 'spec_helper'
-require 'monkey_butler/databases/sqlite_database'
+require 'migration_bundler/databases/sqlite_database'
 
-describe MonkeyButler::CLI, "#init" do
+describe MigrationBundler::CLI, "#init" do
   describe "#init" do
-    let(:thor_class) { MonkeyButler::CLI }
+    let(:thor_class) { MigrationBundler::CLI }
     let!(:project_root) { Dir.mktmpdir }
 
     context 'when no PATH is given' do
@@ -26,7 +26,7 @@ describe MonkeyButler::CLI, "#init" do
 
       context "and is a regular file" do
         it "aborts with an error" do
-          path = Tempfile.new('monkey_butler').path
+          path = Tempfile.new('migration_bundler').path
           output = invoke!([:init, path])
           output[:stderr].should =~ /Cannot create repository: regular file exists at path/
         end
@@ -57,19 +57,19 @@ describe MonkeyButler::CLI, "#init" do
       end
 
       it "populates .gitignore" do
-        invoke!([:init, project_root, '--name=MonkeyButler'])
+        invoke!([:init, project_root, '--name=MigrationBundler'])
         path = File.join(project_root, '.gitignore')
         expect(File.exists?(project_root)).to be_true
         content = File.read(path)
         content.should include('.DS_Store')
-        content.should =~ /^MonkeyButler.sqlite$/
+        content.should =~ /^MigrationBundler.sqlite$/
       end
 
-      describe '.monkey_butler.yml' do
-        let(:args) { [:init, project_root, '--name=MonkeyButler'] }
+      describe '.migration_bundler.yml' do
+        let(:args) { [:init, project_root, '--name=MigrationBundler'] }
         before(:each) do
           invoke!(args)
-          @yaml_path = File.join(project_root, '.monkey_butler.yml')
+          @yaml_path = File.join(project_root, '.migration_bundler.yml')
         end
 
         it "is created" do
@@ -82,7 +82,7 @@ describe MonkeyButler::CLI, "#init" do
 
         it "configures the project name" do
           config = YAML.load(File.read(@yaml_path))
-          config['name'].should == 'MonkeyButler'
+          config['name'].should == 'MigrationBundler'
         end
 
         it "includes a nested config dictionary" do
@@ -96,7 +96,7 @@ describe MonkeyButler::CLI, "#init" do
         end
 
         context "when config option is specified" do
-          let(:args) { [:init, project_root, '--name=MonkeyButler', '--config', 'foo:bar'] }
+          let(:args) { [:init, project_root, '--name=MigrationBundler', '--config', 'foo:bar'] }
 
           it "parses the arguments as a hash of config vars" do
             config = YAML.load(File.read(@yaml_path))
@@ -106,33 +106,33 @@ describe MonkeyButler::CLI, "#init" do
       end
 
       it "creates an empty database" do
-        invoke!([:init, project_root, '--name=MonkeyButler'])
-        path = File.join(project_root, 'MonkeyButler.db')
+        invoke!([:init, project_root, '--name=MigrationBundler'])
+        path = File.join(project_root, 'MigrationBundler.db')
         expect(File.exists?(project_root)).to be_true
       end
 
       it "creates an empty schema" do
-        invoke!([:init, project_root, '--name=MonkeyButler'])
-        path = File.join(project_root, 'MonkeyButler.sql')
+        invoke!([:init, project_root, '--name=MigrationBundler'])
+        path = File.join(project_root, 'MigrationBundler.sql')
         expect(File.exists?(project_root)).to be_true
       end
 
       it "generates an initial migration" do
-        invoke!([:init, project_root, '--name=MonkeyButler'])
-        filename = Dir.entries(File.join(project_root, 'migrations')).detect { |f| f =~ /create_monkey_butler.sql$/ }
+        invoke!([:init, project_root, '--name=MigrationBundler'])
+        filename = Dir.entries(File.join(project_root, 'migrations')).detect { |f| f =~ /create_migration_bundler.sql$/ }
         expect(filename).not_to be_nil
         path = File.join(project_root, 'migrations', filename)
         expect(File.exists?(path)).to be_true
       end
 
       it "initializes a Git repository at the destination path" do
-        invoke!([:init, project_root, '--name=MonkeyButler'])
+        invoke!([:init, project_root, '--name=MigrationBundler'])
         path = File.join(project_root, '.git')
         expect(File.exists?(path)).to be_true
       end
 
       def stub_bundler
-        MonkeyButler::CLI.any_instance.stub(:bundle) do
+        MigrationBundler::CLI.any_instance.stub(:bundle) do
           File.open(File.join(project_root, 'Gemfile.lock'), 'w')
         end
       end
@@ -150,7 +150,7 @@ describe MonkeyButler::CLI, "#init" do
 
         it "omits the option from the YAML" do
           invoke!([:init, project_root, '--bundler'])
-          project = YAML.load File.read(File.join(project_root, '.monkey_butler.yml'))
+          project = YAML.load File.read(File.join(project_root, '.migration_bundler.yml'))
           expect(project['bundler']).to be_nil
         end
       end
@@ -165,7 +165,7 @@ describe MonkeyButler::CLI, "#init" do
           it "writes any changes written to the config back to the file" do
             expect(Thor::LineEditor).to receive(:readline).with("What is the name of your Cocoapods specs repo?  ", {}).and_return("layerhq")
             invoke!([:init, project_root, '--targets', 'cocoapods'])
-            project = YAML.load File.read(File.join(project_root, '.monkey_butler.yml'))
+            project = YAML.load File.read(File.join(project_root, '.migration_bundler.yml'))
             expect(project['config']['cocoapods.repo']).to eql('layerhq')
           end
 
@@ -183,9 +183,9 @@ describe MonkeyButler::CLI, "#init" do
   end
 end
 
-describe MonkeyButler::CLI do
+describe MigrationBundler::CLI do
   let!(:project_root) { clone_temp_sandbox }
-  let(:project) { MonkeyButler::Project.load(project_root) }
+  let(:project) { MigrationBundler::Project.load(project_root) }
   let(:schema_path) { File.join(project_root, project.schema_path) }
 
   def add_migration(sql, ext = '.sql')
@@ -214,12 +214,12 @@ describe MonkeyButler::CLI do
 
     context "when the schema contains invalid SQL" do
       before(:each) do
-        @timestamp = MonkeyButler::Util.migration_timestamp
+        @timestamp = MigrationBundler::Util.migration_timestamp
         sql = <<-SQL
         CREATE TABLE this_is_invalid;
         SQL
         File.open(schema_path, 'w+') do |f|
-          f << MonkeyButler::Util.strip_leading_whitespace(sql)
+          f << MigrationBundler::Util.strip_leading_whitespace(sql)
         end
       end
 
@@ -231,13 +231,13 @@ describe MonkeyButler::CLI do
 
     context "when the schema is populated" do
       before(:each) do
-        @timestamp = MonkeyButler::Util.migration_timestamp
+        @timestamp = MigrationBundler::Util.migration_timestamp
         sql = <<-SQL
-        #{MonkeyButler::Databases::SqliteDatabase.create_schema_migrations_sql}
+        #{MigrationBundler::Databases::SqliteDatabase.create_schema_migrations_sql}
         INSERT INTO schema_migrations(version) VALUES ('#{@timestamp}');
         SQL
         File.open(schema_path, 'w+') do |f|
-          f << MonkeyButler::Util.strip_leading_whitespace(sql)
+          f << MigrationBundler::Util.strip_leading_whitespace(sql)
         end
       end
 
@@ -285,8 +285,8 @@ describe MonkeyButler::CLI do
           db_path = Tempfile.new('specific.db').path
           output = invoke!(%W{migrate -d #{db_path}})
 
-          db = MonkeyButler::Databases::SqliteDatabase.new(sqlite_url_for_path(db_path))
-          expected_versions = MonkeyButler::Util.migrations_by_version(@migration_paths).keys.sort
+          db = MigrationBundler::Databases::SqliteDatabase.new(sqlite_url_for_path(db_path))
+          expected_versions = MigrationBundler::Util.migrations_by_version(@migration_paths).keys.sort
           target_version = expected_versions.max
           expect(db.current_version).to eql(target_version)
           expect(db.all_versions).to eql(expected_versions)
@@ -306,8 +306,8 @@ describe MonkeyButler::CLI do
       it "applies all migrations" do
         output = invoke!(%w{migrate})
 
-        db = MonkeyButler::Databases::SqliteDatabase.new(sqlite_url_for_path(project_root + '/sandbox.sqlite'))
-        expected_versions = MonkeyButler::Util.migrations_by_version(@migration_paths).keys.sort
+        db = MigrationBundler::Databases::SqliteDatabase.new(sqlite_url_for_path(project_root + '/sandbox.sqlite'))
+        expected_versions = MigrationBundler::Util.migrations_by_version(@migration_paths).keys.sort
         target_version = expected_versions.max
         expect(db.current_version).to eql(target_version)
         expect(db.all_versions).to eql(expected_versions)
@@ -315,7 +315,7 @@ describe MonkeyButler::CLI do
 
       it "informs the user of target version" do
         output = invoke!(%w{migrate})
-        expected_versions = MonkeyButler::Util.migrations_by_version(@migration_paths).keys.sort
+        expected_versions = MigrationBundler::Util.migrations_by_version(@migration_paths).keys.sort
         target_version = expected_versions.max
         output[:stdout].should =~ %r{Migrating new database to #{target_version}}
       end
@@ -330,7 +330,7 @@ describe MonkeyButler::CLI do
 
       it "displays migraiton complete message" do
         output = invoke!(%w{migrate})
-        expected_versions = MonkeyButler::Util.migrations_by_version(@migration_paths).keys.sort
+        expected_versions = MigrationBundler::Util.migrations_by_version(@migration_paths).keys.sort
         target_version = expected_versions.max
         output[:stdout].should =~ /Migration to version #{target_version} complete./
       end
@@ -341,8 +341,8 @@ describe MonkeyButler::CLI do
 
     context "when the database is up to date" do
       before(:each) do
-        versions = MonkeyButler::Util.migration_versions_from_paths(@migration_paths)
-        database = MonkeyButler::Databases::SqliteDatabase.create(sqlite_url_for_path(project_root + '/sandbox.sqlite'))
+        versions = MigrationBundler::Util.migration_versions_from_paths(@migration_paths)
+        database = MigrationBundler::Databases::SqliteDatabase.create(sqlite_url_for_path(project_root + '/sandbox.sqlite'))
         versions.each { |version| database.insert_version(version) }
       end
 
@@ -354,15 +354,15 @@ describe MonkeyButler::CLI do
 
     context "when some migrations have been applied" do
       before(:each) do
-        versions = MonkeyButler::Util.migration_versions_from_paths(@migration_paths)
-        database = MonkeyButler::Databases::SqliteDatabase.create(sqlite_url_for_path(project_root + '/sandbox.sqlite'))
+        versions = MigrationBundler::Util.migration_versions_from_paths(@migration_paths)
+        database = MigrationBundler::Databases::SqliteDatabase.create(sqlite_url_for_path(project_root + '/sandbox.sqlite'))
         @current_version = versions.first
         database.insert_version(@current_version)
       end
 
       it "displays the current version of the database" do
         output = invoke!(%w{migrate})
-        expected_versions = MonkeyButler::Util.migrations_by_version(@migration_paths).keys.sort
+        expected_versions = MigrationBundler::Util.migrations_by_version(@migration_paths).keys.sort
         target_version = expected_versions.max
         output[:stdout].should =~ %r{Migrating from #{@current_version} to #{target_version}}
       end
@@ -389,10 +389,10 @@ describe MonkeyButler::CLI do
 
     context "when the database is up to date" do
       before(:each) do
-        versions = MonkeyButler::Util.migration_versions_from_paths(@migration_paths)
+        versions = MigrationBundler::Util.migration_versions_from_paths(@migration_paths)
         path = project_root + '/sandbox.sqlite'
         uri = URI("sqlite://#{path}")
-        database = MonkeyButler::Databases::SqliteDatabase.create(uri)
+        database = MigrationBundler::Databases::SqliteDatabase.create(uri)
         versions.each { |version| database.insert_version(version) }
       end
 
@@ -426,10 +426,10 @@ describe MonkeyButler::CLI do
 
     context "when there are unapplied migrations" do
       before(:each) do
-        versions = MonkeyButler::Util.migration_versions_from_paths(@migration_paths)
+        versions = MigrationBundler::Util.migration_versions_from_paths(@migration_paths)
         path = project_root + '/sandbox.sqlite'
         uri = URI("sqlite://#{path}")
-        database = MonkeyButler::Databases::SqliteDatabase.create(uri)
+        database = MigrationBundler::Databases::SqliteDatabase.create(uri)
         @current_version = versions.first
         database.insert_version(@current_version)
       end
@@ -453,9 +453,9 @@ describe MonkeyButler::CLI do
 
   describe '#validate' do
     before(:each) do
-      sql = MonkeyButler::Util.strip_leading_whitespace <<-SQL
-        #{MonkeyButler::Databases::SqliteDatabase.create_schema_migrations_sql}
-        INSERT INTO schema_migrations(version) VALUES ('#{MonkeyButler::Util.migration_timestamp}');
+      sql = MigrationBundler::Util.strip_leading_whitespace <<-SQL
+        #{MigrationBundler::Databases::SqliteDatabase.create_schema_migrations_sql}
+        INSERT INTO schema_migrations(version) VALUES ('#{MigrationBundler::Util.migration_timestamp}');
       SQL
       File.open(schema_path, 'w+') { |f| f << sql }
       add_migration('CREATE TABLE table1 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
@@ -500,9 +500,9 @@ describe MonkeyButler::CLI do
 
   describe '#generate' do
     before(:each) do
-      sql = MonkeyButler::Util.strip_leading_whitespace <<-SQL
-        #{MonkeyButler::Databases::SqliteDatabase.create_schema_migrations_sql}
-        INSERT INTO schema_migrations(version) VALUES ('#{MonkeyButler::Util.migration_timestamp}');
+      sql = MigrationBundler::Util.strip_leading_whitespace <<-SQL
+        #{MigrationBundler::Databases::SqliteDatabase.create_schema_migrations_sql}
+        INSERT INTO schema_migrations(version) VALUES ('#{MigrationBundler::Util.migration_timestamp}');
       SQL
       File.open(schema_path, 'w+') { |f| f << sql }
       add_migration('CREATE TABLE table1 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
@@ -529,9 +529,9 @@ describe MonkeyButler::CLI do
 
   describe '#package' do
     before(:each) do
-      sql = MonkeyButler::Util.strip_leading_whitespace <<-SQL
-        #{MonkeyButler::Databases::SqliteDatabase.create_schema_migrations_sql}
-        INSERT INTO schema_migrations(version) VALUES ('#{MonkeyButler::Util.migration_timestamp}');
+      sql = MigrationBundler::Util.strip_leading_whitespace <<-SQL
+        #{MigrationBundler::Databases::SqliteDatabase.create_schema_migrations_sql}
+        INSERT INTO schema_migrations(version) VALUES ('#{MigrationBundler::Util.migration_timestamp}');
       SQL
       File.open(schema_path, 'w+') { |f| f << sql }
       add_migration('CREATE TABLE table1 (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT);')
@@ -619,8 +619,8 @@ describe MonkeyButler::CLI do
       end
 
       it "tags a release for the latest version" do
-        db = MonkeyButler::Databases::SqliteDatabase.new(sqlite_url_for_path(project_root + '/sandbox.sqlite'))
-        migrations = MonkeyButler::Migrations.new(project_root + '/migrations', db)
+        db = MigrationBundler::Databases::SqliteDatabase.new(sqlite_url_for_path(project_root + '/sandbox.sqlite'))
+        migrations = MigrationBundler::Migrations.new(project_root + '/migrations', db)
 
         stub_questions
         output = invoke!(%w{package --pretend --commit})
@@ -629,8 +629,8 @@ describe MonkeyButler::CLI do
 
       context "when a tag for the version already exists" do
         it "tags a point release" do
-          db = MonkeyButler::Databases::SqliteDatabase.new(URI(project_root + '/sandbox.sqlite'))
-          migrations = MonkeyButler::Migrations.new(project_root + '/migrations', db)
+          db = MigrationBundler::Databases::SqliteDatabase.new(URI(project_root + '/sandbox.sqlite'))
+          migrations = MigrationBundler::Migrations.new(project_root + '/migrations', db)
           Dir.chdir(project_root) do
             `echo '' > foo`
             `git add foo && git commit -m 'fake commit' .`
@@ -657,7 +657,7 @@ describe MonkeyButler::CLI do
 
   describe "#config" do
     before(:each) do
-      project = MonkeyButler::Project.load(project_root)
+      project = MigrationBundler::Project.load(project_root)
       project.config['this'] = 'that'
       project.config['option'] = 'value'
     end
@@ -681,17 +681,17 @@ describe MonkeyButler::CLI do
     context "when called with two arguments" do
       it "sets the value for the specified option" do
         invoke!(%w{config this value})
-        yaml = YAML.load(File.read(File.join(project_root, '.monkey_butler.yml')))
+        yaml = YAML.load(File.read(File.join(project_root, '.migration_bundler.yml')))
         yaml['config']['this'].should == 'value'
       end
     end
   end
 end
 
-describe MonkeyButler::CLI, "#target integration" do
+describe MigrationBundler::CLI, "#target integration" do
   let!(:project_root) { clone_temp_sandbox }
 
-  context "when the current directory has a monkey_butler.yml file" do
+  context "when the current directory has a migration_bundler.yml file" do
     it "allows the database target to register options" do
       output = invoke!(%w{help dump})
       output[:stdout].should =~ /#{Regexp.escape "-d, [--database=DATABASE]  # Set target DATABASE"}/

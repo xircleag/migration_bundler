@@ -1,7 +1,7 @@
 require 'uri'
 require 'cql'
 
-module MonkeyButler
+module MigrationBundler
   module Databases
     class CassandraDatabase < AbstractDatabase
       attr_reader :client, :keyspace

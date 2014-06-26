@@ -1,14 +1,14 @@
 require 'sqlite3'
 require 'uri'
 
-module MonkeyButler
+module MigrationBundler
   module Databases
     class SqliteDatabase < AbstractDatabase
       attr_reader :db, :path
 
       class << self
         def create_schema_migrations_sql
-          MonkeyButler::Util.strip_leading_whitespace <<-SQL
+          MigrationBundler::Util.strip_leading_whitespace <<-SQL
             CREATE TABLE schema_migrations(
                 version INTEGER UNIQUE NOT NULL
             );
@@ -90,7 +90,7 @@ module MonkeyButler
       # Outside of abstract interface...
 
       def dump_to_schema(type, schema_path)
-        sql = MonkeyButler::Util.strip_leading_whitespace <<-SQL
+        sql = MigrationBundler::Util.strip_leading_whitespace <<-SQL
           SELECT name, sql
           FROM sqlite_master
           WHERE sql NOT NULL AND type = '#{type}'

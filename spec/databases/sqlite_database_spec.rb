@@ -1,26 +1,26 @@
 require 'spec_helper'
-require 'monkey_butler/databases/sqlite_database'
+require 'migration_bundler/databases/sqlite_database'
 
-describe MonkeyButler::Databases::SqliteDatabase do
+describe MigrationBundler::Databases::SqliteDatabase do
   it "has a SQL file extension" do
-    MonkeyButler::Databases::SqliteDatabase.migration_ext.should == '.sql'
+    MigrationBundler::Databases::SqliteDatabase.migration_ext.should == '.sql'
   end
 
   it "initializes with a URL" do
     path = Dir.mktmpdir + '/sandbox.sqlite'
-    database = MonkeyButler::Databases::SqliteDatabase.new(URI("sqlite://#{path}"))
+    database = MigrationBundler::Databases::SqliteDatabase.new(URI("sqlite://#{path}"))
     database.path.should == path
   end
 
   it "stores url" do
     url = URI("sqlite://#{Dir.mktmpdir}/sandbox.sqlite")
-    database = MonkeyButler::Databases::SqliteDatabase.new(url)
+    database = MigrationBundler::Databases::SqliteDatabase.new(url)
     database.url.should == url
   end
 
   it "uses path for to_s" do
     url = URI("sqlite://#{Dir.mktmpdir}/sandbox.sqlite")
-    database = MonkeyButler::Databases::SqliteDatabase.new(url)
+    database = MigrationBundler::Databases::SqliteDatabase.new(url)
     database.to_s.should == url.path
   end
 
@@ -28,14 +28,14 @@ describe MonkeyButler::Databases::SqliteDatabase do
     it "loads the relative path" do
       path = Dir.mktmpdir
       Dir.chdir(path) do
-        database = MonkeyButler::Databases::SqliteDatabase.new(URI("sqlite:test.sqlite"))
+        database = MigrationBundler::Databases::SqliteDatabase.new(URI("sqlite:test.sqlite"))
         database.path.should == 'test.sqlite'
       end
     end
   end
 
-  let(:db_path) { Tempfile.new('monkey_butler').path }
-  let(:db) { MonkeyButler::Databases::SqliteDatabase.create(URI(db_path)) }
+  let(:db_path) { Tempfile.new('migration_bundler').path }
+  let(:db) { MigrationBundler::Databases::SqliteDatabase.create(URI(db_path)) }
 
   describe '#origin_version' do
     context "when the schema_migrations table is empty" do
@@ -46,7 +46,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
 
     context "when the schema_migrations table has a single row" do
       before(:each) do
-        @version = MonkeyButler::Util.migration_timestamp
+        @version = MigrationBundler::Util.migration_timestamp
         db.insert_version(@version)
       end
 
@@ -59,7 +59,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
       before(:each) do
         # Inject to guarantee mutation of the timestamp
         @versions = (1..5).inject([]) do |versions, i|
-          version = MonkeyButler::Util.migration_timestamp + i
+          version = MigrationBundler::Util.migration_timestamp + i
           db.insert_version(version)
           versions << version
         end
@@ -80,7 +80,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
 
     context "when the schema_migrations table has a single row" do
       before(:each) do
-        @version = MonkeyButler::Util.migration_timestamp
+        @version = MigrationBundler::Util.migration_timestamp
         db.insert_version(@version)
       end
 
@@ -93,7 +93,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
       before(:each) do
         # Inject to guarantee mutation of the timestamp
         @versions = (1..5).inject([]) do |versions, i|
-          version = MonkeyButler::Util.migration_timestamp + i
+          version = MigrationBundler::Util.migration_timestamp + i
           db.insert_version(version)
           versions << version
         end
@@ -108,7 +108,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
   describe '#all_versions' do
     context "when the database is empty" do
       it "raises a SQL exception" do
-        db = MonkeyButler::Databases::SqliteDatabase.new(URI(db_path))
+        db = MigrationBundler::Databases::SqliteDatabase.new(URI(db_path))
         expect { db.all_versions }.to raise_error(SQLite3::SQLException)
       end
     end
@@ -121,7 +121,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
 
     context "when the schema_migrations table has a single row" do
       before(:each) do
-        @version = MonkeyButler::Util.migration_timestamp
+        @version = MigrationBundler::Util.migration_timestamp
         db.insert_version(@version)
       end
 
@@ -134,7 +134,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
       before(:each) do
         # Inject to guarantee mutation of the timestamp
         @versions = (1..5).inject([]) do |versions, i|
-          version = MonkeyButler::Util.migration_timestamp + i
+          version = MigrationBundler::Util.migration_timestamp + i
           db.insert_version(version)
           versions << version
         end
@@ -156,7 +156,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
     context "when given invalid SQL" do
       it "raises an error" do
         expect do
-          db.execute_migration MonkeyButler::Util.strip_leading_whitespace(
+          db.execute_migration MigrationBundler::Util.strip_leading_whitespace(
           <<-SQL
             CREATE TABLE new_table(version INTEGER UNIQUE NOT NULL);
             DELETE FROM invalid_table;
@@ -167,7 +167,7 @@ describe MonkeyButler::Databases::SqliteDatabase do
 
       it "rolls back transaction" do
         db.execute_migration("CREATE TABLE new_table(version INTEGER UNIQUE NOT NULL)")
-        db.execute_migration MonkeyButler::Util.strip_leading_whitespace(
+        db.execute_migration MigrationBundler::Util.strip_leading_whitespace(
         <<-SQL
           DROP TABLE new_table;
           DELETE FROM invalid_table;

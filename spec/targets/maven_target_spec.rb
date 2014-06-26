@@ -1,9 +1,9 @@
 require 'spec_helper'
-require 'monkey_butler/targets/base'
-require 'monkey_butler/targets/maven/maven_target'
+require 'migration_bundler/targets/base'
+require 'migration_bundler/targets/maven/maven_target'
 
-describe MonkeyButler::Targets::MavenTarget do
-  let(:thor_class) { MonkeyButler::Targets::MavenTarget }
+describe MigrationBundler::Targets::MavenTarget do
+  let(:thor_class) { MigrationBundler::Targets::MavenTarget }
   let!(:project_root) { clone_temp_sandbox }
 
   describe "#init" do
@@ -21,7 +21,7 @@ describe MonkeyButler::Targets::MavenTarget do
   describe '#generate' do
     before(:all) do
       # Put config into the YAML
-      yaml_path = File.join(project_root, '.monkey_butler.yml')
+      yaml_path = File.join(project_root, '.migration_bundler.yml')
       project = YAML.load(File.read(yaml_path))
       project['config']['maven.url'] = 'maven'
       project['config']['maven.username'] = 'none'
@@ -33,7 +33,7 @@ describe MonkeyButler::Targets::MavenTarget do
 
     # Shadow the let! declarations so we can use before(:all)
     def thor_class
-      MonkeyButler::Targets::MavenTarget
+      MigrationBundler::Targets::MavenTarget
     end
 
     def project_root
@@ -55,7 +55,7 @@ describe MonkeyButler::Targets::MavenTarget do
       expect(Dir.entries(File.join(project_root, 'project/src/main/resources/migrations')).size).not_to eq(2)
     end
 
-    it "should have project/build/libs/monkeybutler-[version].jar files" do
+    it "should have project/build/libs/MigrationBundler-[version].jar files" do
       expect(File.file?(built_jar_path)).to eq(true)
     end
 
@@ -91,7 +91,7 @@ describe MonkeyButler::Targets::MavenTarget do
 
     it "should clear java project between `generate` invocations" do
       # Create a random file in the project directory.
-      yaml_path = File.join(project_root, '.monkey_butler.yml')
+      yaml_path = File.join(project_root, '.migration_bundler.yml')
       project = YAML.load(File.read(yaml_path))
       File.open(File.join(project_root, 'project/deleteme.txt'), 'w') { |f| f << YAML.dump(project) }
       expect(File.file?(File.join(project_root, 'project/deleteme.txt'))).to eq(true)
@@ -107,7 +107,7 @@ describe MonkeyButler::Targets::MavenTarget do
       invoke!(%w{push --quiet})
     end
 
-    it "should have monkeybutler-[version].jar file in the local Maven" do
+    it "should have MigrationBundler-[version].jar file in the local Maven" do
       expect(File.file?(maven_jar_path)).to eq(true)
     end
   end
@@ -115,21 +115,21 @@ describe MonkeyButler::Targets::MavenTarget do
   private
 
   def remove_maven_repo_from_config
-    yaml_path = File.join(project_root, '.monkey_butler.yml')
+    yaml_path = File.join(project_root, '.migration_bundler.yml')
     project = YAML.load(File.read(yaml_path))
     project['config'].delete 'maven.url'
     File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
   end
 
   def remove_maven_username_from_config
-    yaml_path = File.join(project_root, '.monkey_butler.yml')
+    yaml_path = File.join(project_root, '.migration_bundler.yml')
     project = YAML.load(File.read(yaml_path))
     project['config'].delete 'maven.username'
     File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
   end
 
   def remove_maven_password_from_config
-    yaml_path = File.join(project_root, '.monkey_butler.yml')
+    yaml_path = File.join(project_root, '.migration_bundler.yml')
     project = YAML.load(File.read(yaml_path))
     project['config'].delete 'maven.password'
     File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
@@ -146,11 +146,11 @@ describe MonkeyButler::Targets::MavenTarget do
   end
 
   def maven_jar_path
-    File.join(project_root, "maven/com/layer/monkeybutler/20140523123443021/monkeybutler-20140523123443021.jar")
+    File.join(project_root, "maven/com/layer/MigrationBundler/20140523123443021/MigrationBundler-20140523123443021.jar")
   end
 
   def built_jar_path
-    File.join(project_root, "project/build/libs/monkeybutler-20140523123443021.jar")
+    File.join(project_root, "project/build/libs/MigrationBundler-20140523123443021.jar")
   end
 
 end

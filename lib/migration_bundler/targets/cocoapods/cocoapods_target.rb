@@ -1,8 +1,8 @@
-require 'monkey_butler/targets/base'
+require 'migration_bundler/targets/base'
 
-module MonkeyButler
+module MigrationBundler
   module Targets
-    class CocoapodsTarget < MonkeyButler::Targets::Base
+    class CocoapodsTarget < MigrationBundler::Targets::Base
       def init
         unless project.config['cocoapods.repo']
           project.config['cocoapods.repo'] = ask("What is the name of your Cocoapods specs repo? ")

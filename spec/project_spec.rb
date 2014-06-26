@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MonkeyButler::Project do
+describe MigrationBundler::Project do
   let!(:project_root) { clone_temp_sandbox }
-  let(:project) { MonkeyButler::Project.load(project_root) }
+  let(:project) { MigrationBundler::Project.load(project_root) }
 
   before(:each) do
     Dir.chdir(project_root)
@@ -11,21 +11,21 @@ describe MonkeyButler::Project do
   describe "#database" do
     context "when given a URL without a scheme" do
       it "assumes SQLite" do
-        project = MonkeyButler::Project.new(database_url: 'sandbox.sqlite')
+        project = MigrationBundler::Project.new(database_url: 'sandbox.sqlite')
         project.database.should == 'sqlite'
       end
     end
 
     context "given a SQLite URL" do
       it "returns sqlite" do
-        project = MonkeyButler::Project.new(database_url: 'sqlite:///sandbox.sqlite')
+        project = MigrationBundler::Project.new(database_url: 'sqlite:///sandbox.sqlite')
         project.database.should == 'sqlite'
       end
     end
 
     context "given a Cassandra URL" do
       it "returns cassandra" do
-        project = MonkeyButler::Project.new(database_url: 'cassandra://localhost:9170')
+        project = MigrationBundler::Project.new(database_url: 'cassandra://localhost:9170')
         project.database.should == 'cassandra'
       end
     end

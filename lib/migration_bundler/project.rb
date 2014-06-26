@@ -1,13 +1,13 @@
 require 'yaml'
 require 'uri'
 
-module MonkeyButler
+module MigrationBundler
   class Project
     class << self
       def load(path = Dir.pwd)
         @project ||= proc do
-          project_path = File.join(path, '.monkey_butler.yml')
-          raise "fatal: Not a monkey_butler repository: no .monkey_butler.yml" unless File.exists?(project_path)
+          project_path = File.join(path, '.migration_bundler.yml')
+          raise "fatal: Not a migration_bundler repository: no .migration_bundler.yml" unless File.exists?(project_path)
           options = YAML.load(File.read(project_path))
           new(options)
         end.call
@@ -71,16 +71,16 @@ module MonkeyButler
     end
 
     def save!(path)
-      project_path = File.join(path, '.monkey_butler.yml')
+      project_path = File.join(path, '.migration_bundler.yml')
       File.open(project_path, 'w') { |f| f << YAML.dump(self.to_hash) }
     end
 
     def database_class
-      MonkeyButler::Util.database_named(database)
+      MigrationBundler::Util.database_named(database)
     end
 
     def database_target_class
-      MonkeyButler::Util.target_classes_named(database)[0]
+      MigrationBundler::Util.target_classes_named(database)[0]
     end
 
     def to_hash

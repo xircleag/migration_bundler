@@ -1,4 +1,4 @@
 require 'spec_helper'
 
-describe MonkeyButler::Migrations do
+describe MigrationBundler::Migrations do
 end

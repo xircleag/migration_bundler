@@ -1,17 +1,17 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'monkey_butler/version'
+require 'migration_bundler/version'
 
 Gem::Specification.new do |s|
-  s.name        = 'monkey_butler'
+  s.name        = 'migration_bundler'
   s.version     = '1.2.6'
   s.date        = '2014-06-18'
-  s.summary     = "Monkey Butler is a flexible database schema management system"
-  s.description = "A simple hello world gem"
+  s.summary     = "A flexible database schema management system."
+  s.description = "Migration Bundler is a complete database schema management system providing migrations, dump/load, and packaging of schema artifacts."
   s.authors     = ["Blake Watters"]
   s.email       = 'blake@layer.com'
-  s.homepage    = 'http://github.com/layerhq/monkey_butler'
+  s.homepage    = 'http://github.com/layerhq/migration_bundler'
   s.license     = 'Apache 2'
 
   s.files         = `git ls-files`.split($/)

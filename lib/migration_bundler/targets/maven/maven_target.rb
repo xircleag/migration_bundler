@@ -1,8 +1,8 @@
-require 'monkey_butler/targets/base'
+require 'migration_bundler/targets/base'
 
-module MonkeyButler
+module MigrationBundler
   module Targets
-    class MavenTarget < MonkeyButler::Targets::Base
+    class MavenTarget < MigrationBundler::Targets::Base
       def init
         unless project.config['maven.url']
           project.config['maven.url'] = ask("What is the URL of your Java Maven repo? ")

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'monkey_butler'
-require 'monkey_butler/cli'
+require 'migration_bundler'
+require 'migration_bundler/cli'
 
-MonkeyButler::CLI.start(ARGV)
+MigrationBundler::CLI.start(ARGV)

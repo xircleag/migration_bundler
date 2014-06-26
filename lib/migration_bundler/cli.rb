@@ -1,16 +1,16 @@
 require 'thor'
 require "open3"
-require 'monkey_butler/project'
-require 'monkey_butler/actions'
-require 'monkey_butler/databases/abstract_database'
-require 'monkey_butler/migrations'
-require 'monkey_butler/util'
-require 'monkey_butler/targets/base'
+require 'migration_bundler/project'
+require 'migration_bundler/actions'
+require 'migration_bundler/databases/abstract_database'
+require 'migration_bundler/migrations'
+require 'migration_bundler/util'
+require 'migration_bundler/targets/base'
 
-module MonkeyButler
+module MigrationBundler
   class CLI < Thor
     include Thor::Actions
-    include MonkeyButler::Actions
+    include MigrationBundler::Actions
 
     add_runtime_options!
 
@@ -25,7 +25,7 @@ module MonkeyButler
     method_option :name, type: :string, aliases: '-n', desc: "Specify project name"
     method_option :database, type: :string, aliases: '-d', desc: "Specify database path or URL."
     method_option :targets, type: :array, aliases: '-g', default: [], desc: "Specify default code targets."
-    method_option :bundler, type: :boolean, aliases: '-b', default: false, desc: "Use Bundler to import MonkeyButler into project."
+    method_option :bundler, type: :boolean, aliases: '-b', default: false, desc: "Use Bundler to import MigrationBundler into project."
     method_option :config, type: :hash, aliases: '-c', default: {}, desc: "Specify config variables."
     def init(path)
       if File.exists?(path)
@@ -41,15 +41,15 @@ module MonkeyButler
       sanitized_options = options.reject { |k,v| %w{bundler pretend database}.include?(k) }
       sanitized_options[:name] = project_name
       sanitized_options[:database_url] = options[:database] || "sqlite:#{project_name}.sqlite"
-      @project = MonkeyButler::Project.set(sanitized_options)
+      @project = MigrationBundler::Project.set(sanitized_options)
 
       # generate_gitignore
       template('templates/gitignore.erb', ".gitignore")
       git_add '.gitignore'
 
       # generate_config
-      create_file '.monkey_butler.yml', YAML.dump(sanitized_options)
-      git_add '.monkey_butler.yml'
+      create_file '.migration_bundler.yml', YAML.dump(sanitized_options)
+      git_add '.migration_bundler.yml'
 
       # generate_gemfile
       if options['bundler']
@@ -57,15 +57,15 @@ module MonkeyButler
       end
 
       # init_targets
-      project = MonkeyButler::Project.set(sanitized_options)
+      project = MigrationBundler::Project.set(sanitized_options)
       target_options = options.merge('name' => project_name)
-      MonkeyButler::Util.target_classes_named(options[:targets]) do |target_class|
+      MigrationBundler::Util.target_classes_named(options[:targets]) do |target_class|
         say "Initializing target '#{target_class.name}'..."
         invoke(target_class, :init, [], target_options)
       end
       project.config['db.dump_tables'] = %w{schema_migrations}
       project.save!(destination_root) unless options['pretend']
-      git_add '.monkey_butler.yml'
+      git_add '.migration_bundler.yml'
 
       # Run after targets in case they modify the Gemfile
       # run_bundler
@@ -88,25 +88,25 @@ module MonkeyButler
 
     desc "dump", "Dump project schema from a database"
     def dump
-      @project = MonkeyButler::Project.load
+      @project = MigrationBundler::Project.load
       invoke(project.database_target_class, :dump, [], options)
     end
 
     desc "load", "Load project schema into a database"
     def load
-      @project = MonkeyButler::Project.load
+      @project = MigrationBundler::Project.load
       invoke(project.database_target_class, :load, [], options)
     end
 
     desc "drop", "Drop the schema currently loaded into a database"
     def drop
-      @project = MonkeyButler::Project.load
+      @project = MigrationBundler::Project.load
       invoke(project.database_target_class, :drop, [], options)
     end
 
     desc "new NAME", "Create a new migration"
     def new(name)
-      @project = MonkeyButler::Project.load
+      @project = MigrationBundler::Project.load
       empty_directory('migrations')
       invoke(project.database_target_class, :new, [name], options)
     end
@@ -114,8 +114,8 @@ module MonkeyButler
     desc "status", "Display current schema version and any pending migrations"
     method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     def status
-      project = MonkeyButler::Project.load
-      migrations = MonkeyButler::Migrations.new(project.migrations_path, database)
+      project = MigrationBundler::Project.load
+      migrations = MigrationBundler::Migrations.new(project.migrations_path, database)
 
       if database.migrations_table?
         say "Current version: #{migrations.current_version}"
@@ -150,7 +150,7 @@ module MonkeyButler
     method_option :database, type: :string, aliases: '-d', desc: "Set target DATABASE"
     method_option :dump, type: :boolean, aliases: '-D', desc: "Dump schema after migrate"
     def migrate(version = nil)
-      project = MonkeyButler::Project.load
+      project = MigrationBundler::Project.load
 
       if migrations.up_to_date?
         say "Database is up to date."
@@ -192,7 +192,7 @@ module MonkeyButler
 
     desc "validate", "Validate that schema loads and all migrations are linearly applicable"
     def validate
-      project = MonkeyButler::Project.load
+      project = MigrationBundler::Project.load
 
       say "Validating project configuration..."
       say_status :git, "configuration", (project.git_url.empty? ? :red : :green)
@@ -215,7 +215,7 @@ module MonkeyButler
 
       say "Validating targets..."
       target_names = options['targets'] || project.targets
-      MonkeyButler::Util.target_classes_named(target_names) do |target_class|
+      MigrationBundler::Util.target_classes_named(target_names) do |target_class|
         with_padding do
           say_status :validate, target_class.name
           invoke_with_padding(target_class, :validate, [], options)
@@ -229,10 +229,10 @@ module MonkeyButler
     desc "generate", "Generate platform specific migration implementations"
     method_option :targets, type: :array, aliases: '-t', desc: "Generate only the specified targets."
     def generate
-      project = MonkeyButler::Project.load
+      project = MigrationBundler::Project.load
       invoke(project.database_target_class, :generate, [], options)
       target_names = options['targets'] || project.targets
-      MonkeyButler::Util.target_classes_named(target_names) do |target_class|
+      MigrationBundler::Util.target_classes_named(target_names) do |target_class|
         say "Invoking target '#{target_class.name}'..."
         invoke(target_class, :generate, [], options)
       end
@@ -288,7 +288,7 @@ module MonkeyButler
 
       # Give the targets a chance to push
       target_names = options['targets'] || project.targets
-      MonkeyButler::Util.target_classes_named(target_names) do |target_class|
+      MigrationBundler::Util.target_classes_named(target_names) do |target_class|
         say "Invoking target '#{target_class.name}'..."
         invoke(target_class, :push, [], options)
       end
@@ -313,8 +313,8 @@ module MonkeyButler
 
     # Hook into the command execution for dynamic task configuration
     def self.start(given_args = ARGV, config = {})
-      if File.exists?(Dir.pwd + '/.monkey_butler.yml')
-        project = MonkeyButler::Project.load
+      if File.exists?(Dir.pwd + '/.migration_bundler.yml')
+        project = MigrationBundler::Project.load
         project.database_target_class.register_with_cli(self)
       end
       super
@@ -341,7 +341,7 @@ module MonkeyButler
     end
 
     def project
-      @project ||= MonkeyButler::Project.load
+      @project ||= MigrationBundler::Project.load
     end
 
     def database
@@ -349,7 +349,7 @@ module MonkeyButler
     end
 
     def migrations
-      @migrations ||= MonkeyButler::Migrations.new(project.migrations_path, database)
+      @migrations ||= MigrationBundler::Migrations.new(project.migrations_path, database)
     end
   end
 end

@@ -1,13 +1,11 @@
-# Monkey Butler
-[![Gem Version](https://badge.fury.io/rb/monkey_butler.svg)](http://badge.fury.io/rb/monkey_butler)
+# Migration Bundler
+[![Gem Version](https://badge.fury.io/rb/migration_bundler.svg)](http://badge.fury.io/rb/migration_bundler)
 
-![Monkey Butler](logo.jpg)
-
-Monkey Butler is a database schema management system written in Ruby. It currently supports SQLite and Cassandra database 
+Migration Bundler is a database schema management system written in Ruby. It currently supports SQLite and Cassandra database 
 targets. It was built to solve the schema management challenges on the mobile SDK's and server side services developed for 
 the [Layer](http://layer.com) platform.
 
-Monkey Butler manages a Git repository containing a database schema and an arbitrary number of migrations. The migrations are 
+Migration Bundler manages a Git repository containing a database schema and an arbitrary number of migrations. The migrations are 
 authored in SQL format and platform specific renderings of the schema and migrations are created via code generation.
 The current schema and all associated migrations can then be packaged into a release and shipped as a versioned, installable package.
 
@@ -22,19 +20,19 @@ The current schema and all associated migrations can then be packaged into a rel
 
 ## Requirements
 
-Monkey Butler requires a modern Ruby runtime (v1.9.x and up) and the following supporting cast:
+Migration Bundler requires a modern Ruby runtime (v1.9.x and up) and the following supporting cast:
 
 * [thor](http://whatisthor.com/) - Toolkit for building powerful commandline utilities
 
 ## Usage
 
-Monkey Butler is a commandline utility available via the `mb` binary. There are a number of standard commandline
-switches available that control the defaults and target behavior of a Monkey Butler invocation. You can obtain help directly from the 
+Migration Bundler is a commandline utility available via the `mb` binary. There are a number of standard commandline
+switches available that control the defaults and target behavior of a Migration Bundler invocation. You can obtain help directly from the 
 application by executing `mb help`.
 
 ### Initializing a Project
 
-Creates a new Monkey Butler schema repository at the path specified. Please refer to the documentation below regarding
+Creates a new Migration Bundler schema repository at the path specified. Please refer to the documentation below regarding
 the repository structure.
 
 `$ mb init [path/to/project]`
@@ -95,7 +93,7 @@ Pushes a release to Git, CocoaPods, and Maven.
 
 ## Design & Implementation Details
 
-Monkey Butler was designed to deliver the following properties:
+Migration Bundler was designed to deliver the following properties:
 
 1. Provide a simple mechanism for integrating a unified schema into multiple codebases in parallel.
 1. Support straightforward bootstrapping of a database with the current schema.
@@ -103,16 +101,16 @@ Monkey Butler was designed to deliver the following properties:
 3. Enable reliable, low friction testing of the migration process.
 4. Support a heavily branched, multi-developer workflow in which multiple developers are evolving the schema in parallel.
 
-This portion of the document details how Monkey Butler has been implemented to deliver these properties.
+This portion of the document details how Migration Bundler has been implemented to deliver these properties.
 
 ### Project Layout
 
-A Monkey Butler project is a simple filesystem layout with version control provided by Git. When a new project is
+A Migration Bundler project is a simple filesystem layout with version control provided by Git. When a new project is
 initialized, it has the following structure:
 
 	.
 	├── .gitignore
-	├── .monkey_butler.yml
+	├── .migration_bundler.yml
 	├── [project-name].sql
 	├── [project-name].sqlite
 	└── migrations
@@ -202,7 +200,7 @@ Platform specific migrations can also be generated.
 
 ## Companion Projects
 
-Monkey Butler itself only generates installable packages containing the schema and migrations. To utilize these schemas in an application you'll
+Migration Bundler itself only generates installable packages containing the schema and migrations. To utilize these schemas in an application you'll
 need support code. The following companion projects are available for this use:
 
 * [FMDBMigrationManager](https://github.com/layerhq/FMDBMigrationManager) - An Objective-C SQLite migration manager implementation for use with the [FMDB](https://github.com/ccgus/fmdb) library.
@@ -218,4 +216,4 @@ Blake Watters
 
 ## License
 
-Monkey Butler is available under the Apache 2 License. See the LICENSE file for more info.
+Migration Bundler is available under the Apache 2 License. See the LICENSE file for more info.

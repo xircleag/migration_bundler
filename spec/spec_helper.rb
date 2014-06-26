@@ -1,7 +1,7 @@
 require 'bundler/setup'
 Bundler.setup
 
-require 'monkey_butler'
+require 'migration_bundler'
 
 require 'rspec/core/shared_context'
 require 'tempfile'
@@ -18,7 +18,7 @@ end
 RSpec.configure do |config|
   config.before do
     ARGV.replace []
-    MonkeyButler::Project.clear
+    MigrationBundler::Project.clear
   end
 
   config.include GlobalContext
@@ -60,14 +60,14 @@ RSpec.configure do |config|
       FileUtils.cp_r Dir.glob(sandbox_root + "#{database}/."), path
       Dir.chdir(path) do
         system("git init -q .")
-        system("git remote add origin git@github.com:layerhq/monkey_butler_sandbox.git")
+        system("git remote add origin git@github.com:layerhq/migration_bundler_sandbox.git")
       end
     end
   end
 
   def random_migration_name
-    timestamp = MonkeyButler::Util.migration_timestamp + rand(1..1000)
-    MonkeyButler::Util.migration_named(Digest::SHA256.hexdigest(Time.now.to_s), timestamp)
+    timestamp = MigrationBundler::Util.migration_timestamp + rand(1..1000)
+    MigrationBundler::Util.migration_named(Digest::SHA256.hexdigest(Time.now.to_s), timestamp)
   end
 
   # Requires `thor_class` and `project_root`

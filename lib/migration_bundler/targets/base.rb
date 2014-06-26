@@ -1,8 +1,8 @@
-module MonkeyButler
+module MigrationBundler
   module Targets
     class Base < Thor
       include Thor::Actions
-      include MonkeyButler::Actions
+      include MigrationBundler::Actions
       add_runtime_options!
 
       class << self
@@ -66,7 +66,7 @@ module MonkeyButler
 
       protected
       def project
-        @project ||= MonkeyButler::Project.load(destination_root)
+        @project ||= MigrationBundler::Project.load(destination_root)
       end
 
       def database
@@ -78,7 +78,7 @@ module MonkeyButler
       end
 
       def migrations
-        @migrations ||= MonkeyButler::Migrations.new(project.migrations_path, database)
+        @migrations ||= MigrationBundler::Migrations.new(project.migrations_path, database)
       end
     end
   end

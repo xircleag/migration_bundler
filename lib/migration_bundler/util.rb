@@ -1,4 +1,4 @@
-module MonkeyButler
+module MigrationBundler
   class Util
     class << self
       def migration_timestamp
@@ -39,16 +39,16 @@ module MonkeyButler
 
       def database_named(name)
         raise ArgumentError, "Database name cannot be nil." if name.nil?
-        require "monkey_butler/databases/#{name}_database"
-        klass_name = "MonkeyButler::Databases::#{Util.camelize(name)}Database"
+        require "migration_bundler/databases/#{name}_database"
+        klass_name = "MigrationBundler::Databases::#{Util.camelize(name)}Database"
         Object.const_get(klass_name)
       end
 
       def target_classes_named(*names)
         raise ArgumentError, "Database name cannot be nil." if names.nil?
         names.flatten.map do |name|
-          require "monkey_butler/targets/#{name}/#{name}_target"
-          klass_name = "MonkeyButler::Targets::#{Util.camelize(name)}Target"
+          require "migration_bundler/targets/#{name}/#{name}_target"
+          klass_name = "MigrationBundler::Targets::#{Util.camelize(name)}Target"
           Object.const_get(klass_name).tap do |klass|
             yield klass if block_given?
           end
