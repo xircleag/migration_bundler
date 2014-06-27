@@ -1,3 +1,7 @@
+## v1.3.1
+
+* Enhanced support for dumping Cassandra columns.
+
 ## v1.3.0
 
 * Added support for dumping arbitrary sets of tables.
