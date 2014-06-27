@@ -77,9 +77,31 @@ module MigrationBundler
           rows.each do |row|
             values = columns.map do |column|
               value = row[column]
-              value.is_a?(String) ? "\"#{value}\"" : value
+              serialize_value_of_type(value, rows.metadata[column].type)
             end
             statements << "INSERT INTO #{table_name} (#{columns.join(', ')}) VALUES (#{values.join(', ')});"
+          end
+        end
+      end
+
+      def serialize_value_of_type(value, type)
+        if type.is_a?(Array) && type.first == :list
+          '[' + serialize_value_of_type(value, type.last) + ']'
+        elsif type.is_a?(Array) && type.first == :set
+          '{' + serialize_value_of_type(value, type.last) + '}'
+        elsif value.kind_of?(Enumerable)
+          value.map { |e| serialize_value_of_type(e, type) }.join(', ')
+        else
+          if type == :blob
+            '0x' + value.unpack('H*').first
+          else
+            case value
+            when String then "'#{value}'"
+            when Cql::TimeUuid then value.to_s
+            when NilClass then 'NULL'
+            else
+              value
+            end
           end
         end
       end
