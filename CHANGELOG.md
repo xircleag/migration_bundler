@@ -1,3 +1,7 @@
+## v1.3.2
+
+* Various bugfixes for Android/Maven support.
+
 ## v1.3.1
 
 * Enhanced support for dumping Cassandra columns.

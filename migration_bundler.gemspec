@@ -5,8 +5,8 @@ require 'migration_bundler/version'
 
 Gem::Specification.new do |s|
   s.name        = 'migration_bundler'
-  s.version     = '1.3.1'
-  s.date        = '2014-06-26'
+  s.version     = '1.3.2'
+  s.date        = '2014-07-01'
   s.summary     = "A flexible database schema management system."
   s.description = "Migration Bundler is a complete database schema management system providing migrations, dump/load, and packaging of schema artifacts."
   s.authors     = ["Blake Watters"]
