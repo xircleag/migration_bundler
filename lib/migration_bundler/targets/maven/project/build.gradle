@@ -29,14 +29,14 @@ repositories {
  * Uploading
  ************************************************/
 task Jar(type: Jar) {
-    jar.archiveName = "MigrationBundler-" + version + ".jar"
+    jar.archiveName = "migrationbundler-" + version + ".jar"
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             groupId "com.layer"
-            artifactId "MigrationBundler"
+            artifactId "migrationbundler"
             from components.java
         }
     }

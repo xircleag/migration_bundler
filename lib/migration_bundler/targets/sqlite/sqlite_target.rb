@@ -58,7 +58,7 @@ module MigrationBundler
             say "Dumping rows from '#{table_name}'..."
             with_padding do
               row_statements = database.dump_rows(table_name)
-              f.puts row_statements.join("\n")
+              f.puts row_statements.join("\n\n")
               say "wrote #{row_statements.size} rows.", :green
             end
           end

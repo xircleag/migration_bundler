@@ -55,7 +55,7 @@ describe MigrationBundler::Targets::MavenTarget do
       expect(Dir.entries(File.join(project_root, 'project/src/main/resources/migrations')).size).not_to eq(2)
     end
 
-    it "should have project/build/libs/MigrationBundler-[version].jar files" do
+    it "should have project/build/libs/migrationbundler-[version].jar files" do
       expect(File.file?(built_jar_path)).to eq(true)
     end
 
@@ -102,12 +102,22 @@ describe MigrationBundler::Targets::MavenTarget do
 
   describe '#push' do
     before(:each) do
-      set_config
-      invoke!(%w{generate --quiet})
+      # Put config into the YAML
+      yaml_path = File.join(project_root, '.migration_bundler.yml')
+      project = YAML.load(File.read(yaml_path))
+      project['config']['maven.url'] = File.join(project_root, "maven")
+      project['config']['maven.username'] = 'none'
+      project['config']['maven.password'] = 'none'
+      File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
+
+      invoke!(['generate', '--quiet'])
       invoke!(%w{push --quiet})
     end
 
-    it "should have MigrationBundler-[version].jar file in the local Maven" do
+    it "should have migrationbundler-[version].jar file in the local Maven" do
+      print project_root
+      print '\n'
+      print maven_jar_path
       expect(File.file?(maven_jar_path)).to eq(true)
     end
   end
@@ -146,11 +156,11 @@ describe MigrationBundler::Targets::MavenTarget do
   end
 
   def maven_jar_path
-    File.join(project_root, "maven/com/layer/MigrationBundler/20140523123443021/MigrationBundler-20140523123443021.jar")
+    File.join(project_root, "maven/com/layer/migrationbundler/20140523123443021/migrationbundler-20140523123443021.jar")
   end
 
   def built_jar_path
-    File.join(project_root, "project/build/libs/MigrationBundler-20140523123443021.jar")
+    File.join(project_root, "project/build/libs/migrationbundler-20140523123443021.jar")
   end
 
 end

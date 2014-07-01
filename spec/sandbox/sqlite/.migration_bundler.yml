@@ -1,9 +1,10 @@
 name: sandbox
 database_url: sqlite:sandbox.sqlite
 targets:
-  - cocoapods
+  - maven
 config:
-   cocoapods.repo: example_specs_repo
-   maven.url: "http://maven.layer.com:1234/nexus"
+   maven.url: http://maven.layer.com:1234/nexus
+   maven.username: none
+   maven.password: none
    db.dump_tables:
      - schema_migrations
