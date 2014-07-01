@@ -110,14 +110,17 @@ describe MigrationBundler::Targets::MavenTarget do
       project['config']['maven.password'] = 'none'
       File.open(yaml_path, 'w') { |f| f << YAML.dump(project) }
 
+      Dir.chdir(project_root) do
+        `git add .`
+        `git commit --no-status -m 'Adding files' .`
+        `git tag 20140523123443021`
+      end
+
       invoke!(['generate', '--quiet'])
-      invoke!(%w{push --quiet})
     end
 
     it "should have migrationbundler-[version].jar file in the local Maven" do
-      print project_root
-      print '\n'
-      print maven_jar_path
+      invoke!(%w{push --quiet})
       expect(File.file?(maven_jar_path)).to eq(true)
     end
   end
