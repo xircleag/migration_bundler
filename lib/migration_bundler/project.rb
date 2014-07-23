@@ -51,7 +51,7 @@ module MigrationBundler
     def git_latest_tag
       git_tag_for_version(nil)
     end
-    
+
     def git_current_branch
       `git symbolic-ref --short HEAD`.chomp
     end
@@ -59,6 +59,7 @@ module MigrationBundler
     def git_tag_for_version(version)
       pattern = version && "#{version}*"
       tag = `git tag -l --sort=-v:refname #{pattern} | head -n 1`.chomp
+      raise "Failed trying to determine version tag: Git may be outdated. Git >= 1.9.0 is required." unless $?.exitstatus.zero?
       tag.empty? ? nil : tag
     end
 
