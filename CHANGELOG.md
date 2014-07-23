@@ -1,3 +1,7 @@
+## v1.3.3
+
+* Fail if an attempt is made to determine tags with Git < 1.9.x
+
 ## v1.3.2
 
 * Various bugfixes for Android/Maven support.
