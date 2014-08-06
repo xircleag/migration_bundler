@@ -1,3 +1,8 @@
+## v1.4.0
+
+* Introduces support for [gradle-git-repo-plugin](https://github.com/layerhq/gradle-git-repo-plugin) via the `maven_git` target.
+  This plugin provides support for the publication of Maven artifacts hosted in private Git repositories.
+
 ## v1.3.3
 
 * Fail if an attempt is made to determine tags with Git < 1.9.x
