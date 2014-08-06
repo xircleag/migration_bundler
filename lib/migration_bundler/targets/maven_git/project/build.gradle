@@ -1,0 +1,51 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'git-repo'
+
+/**
+ GIT_REPO_HOME
+ * Specify:
+ *   -Pversion=[VERSION]
+ *   -Purl=[MAVEN URL TO PUBLISH TO] e.g. "http://nexus.dev.layer.com:8081/nexus/content/repositories/releases" or "${System.env.HOME}/.m2/repository"
+ */
+
+buildscript {
+    repositories {
+        maven { url "https://github.com/layerhq/releases-gradle/raw/master/releases" }
+    }
+    dependencies {
+        classpath group: 'com.layer', name: 'git-repo-plugin', version: '1.0.0'
+    }
+}
+
+compileJava {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+}
+
+repositories {
+    mavenCentral()
+}
+
+/*************************************************
+ * Uploading
+ ************************************************/
+task Jar(type: Jar) {
+    jar.archiveName = "migrationbundler-" + version + ".jar"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId "com.layer"
+            artifactId "migrationbundler"
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file://${property("gitRepoHome")}/${property("org")}/${property("repo")}/releases"
+        }
+    }
+}
